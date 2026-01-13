@@ -1,0 +1,9 @@
+cellranger_count/
+resources/
+nohup.out
+# snakemake
+.snakemake/
+logs/
+results/
+# JADE
+sps-*

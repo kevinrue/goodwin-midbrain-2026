@@ -1,0 +1,96 @@
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        "results/cellranger_mkref",
+
+# fetch genome sequence from Ensembl
+# -----------------------------------------------------
+# Download a list of genome FASTA files (see config/config.yaml).
+# Decompress them and concatenate them into a single FASTA file.
+def prepare_reference_genome_fasta_cmd(config):
+    # constants
+    tmp_dir = "tmp_genome"
+    curl_template_cmd = "curl {source_url} > {tmp_dir}/{basename} && "
+    # concatenate commands into a string
+    cmd = f"mkdir -p {tmp_dir} && "
+    for source_url in config["genome"]["fastas"]:
+        basename = os.path.basename(source_url)
+        cmd += curl_template_cmd.format(source_url=source_url, basename=basename, tmp_dir=tmp_dir)
+    cmd += f"zcat {tmp_dir}/*.fa.gz > results/genome/genome.fa && "
+    cmd += f"rm -rf {tmp_dir}"
+    return cmd
+
+
+prepare_reference_genome_fasta_cmd_str = prepare_reference_genome_fasta_cmd(config)
+
+rule concatenate_reference_fasta:
+    output:
+        "results/genome/genome.fa",
+    log:
+        "logs/concatenate_reference_fasta.log",
+    resources:
+        mem="8G",
+        runtime="5m",
+    threads: 1
+    shell:
+        "({prepare_reference_genome_fasta_cmd_str}) 2> {log}"
+
+# fetch genome annotations from Ensembl
+# -----------------------------------------------------
+# Download a GTF file (see config/config.yaml).
+# Decompress it and save it as a GTF file.
+rule fetch_genome_gtf:
+    output:
+        "results/genome/genome.gtf",
+    params:
+        source_url=config["genome"]["gtf"][0],
+    log:
+        "logs/fetch_genome_gtf.log",
+    resources:
+        mem="8G",
+        runtime="20m",
+    threads: 1
+    shell:
+        "(mkdir -p tmp_gtf &&"
+        " curl {params.source_url} > tmp_gtf/genome.gtf.gz && "
+        " zcat tmp_gtf/genome.gtf.gz | "
+        "   grep -v '^#' | "
+        "   grep -v '^Unmapped_Scaffold' | "
+        "   grep -v '^rDNA' | "
+        "   grep -v '^Y_mapped_Scaffold' | "
+        "   grep -v '^211' > {output} && "
+        " rm -rf tmp_gtf) 2> {log}"
+
+# Make cellranger reference
+# -----------------------------------------------------
+rule cellranger_mkref:
+    input:
+        fasta="results/genome/genome.fa",
+        gtf="results/genome/genome.gtf",
+    output:
+        directory("results/cellranger_mkref"),
+    params:
+        genome=config["cellranger"]["mkref"]["genome"]
+    message:
+        """--- Make cellranger reference."""
+    threads: 1
+    resources:
+        mem=str(lookup(within=config, dpath="cellranger/mkref/mem_gb")) + "G",
+        mem_gb=lookup(within=config, dpath="cellranger/mkref/mem_gb"),
+        runtime=lookup(within=config, dpath="cellranger/mkref/runtime"),
+    log:
+        "logs/cellranger_mkref.log",
+    shell:
+        "cellranger mkref"
+        " --genome {params.genome}"
+        " --fasta {input.fasta}"
+        " --genes {input.gtf}"
+        " --nthreads {threads}"
+        " --memgb {resources.mem_gb}"
+        " --output-dir {output}"
+        " 2> {log}"
