@@ -1,0 +1,77 @@
+---
+title: "setup"
+format: html
+---
+
+```{r}
+library(tibble)
+```
+
+```{r}
+sample_info <- tibble(
+  id = c(
+    "WPPm048hrs_rep1",
+    "WPPm024hrs_rep1",
+    "WPPp000hrs_rep1",
+    "WPPp024hrs_rep1",
+    "WPPp048hrs_rep1",
+    "WPPp072hrs_rep1",
+    "WPPp096hrs_rep1",
+    "WPPp120hrs_rep1",
+    "WPPm048hrs_rep2",
+    "WPPm024hrs_rep2",
+    "WPPp000hrs_rep2",
+    "WPPp024hrs_rep2",
+    "WPPp048hrs_rep2",
+    "WPPp072hrs_rep2",
+    "WPPp096hrs_rep2",
+    "WPPp120hrs_rep2"
+  ),
+  directory = c(
+    "Sample_1",
+    "Sample_2",
+    "Sample_3",
+    "Sample_4",
+    "Sample_5",
+    "Sample_6",
+    "Sample_7",
+    "Sample_8",
+    "Sample_9",
+    "Sample_10",
+    "Sample_11",
+    "Sample_12",
+    "Sample_13",
+    "Sample_14",
+    "Sample_15",
+    "Sample_16"
+  )
+)
+```
+
+```{r}
+tibble_list <- list()
+for (i in seq_len(nrow(sample_info))) {
+  sample_id <- sample_info$id[i]
+  sample_dir <- sample_info$directory[i]
+  fq1 <- list.files(path = sprintf("../data/%s/", sample_dir), pattern = "R1_001.fastq.gz")
+  fq2 <- gsub(pattern = "R1_001.fastq.gz", replacement = "R2_001.fastq.gz", fq1)
+  tib <- tibble(
+    id = sample_id,
+    feature_types = "Gene Expression",
+    read1 = file.path("data", sample_dir, fq1),
+    read2 = file.path("data", sample_dir, fq2),
+    lane_number = seq_along(fq1),
+    subsample_rate = ""
+  )
+  tibble_list[[sample_id]] <- tib
+}
+```
+
+```{r}
+tibble_combined <- do.call("rbind", tibble_list)
+```
+
+```{r}
+readr::write_tsv(x = tibble_combined, file = "../config/pools2.tsv")
+```
+

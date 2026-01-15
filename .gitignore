@@ -3,7 +3,10 @@ resources/
 nohup.out
 # snakemake
 .snakemake/
+data/
 logs/
 results/
 # JADE
 sps-*
+# cellranger
+*.mro
