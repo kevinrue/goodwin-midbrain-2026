@@ -9,5 +9,5 @@ snakedeploy deploy-workflow https://github.com/snakemake-workflows/cellranger-mu
 ```
 export CELLRANGER_TARBALL="/ceph/project/goodwin/albrecht/resources/cellranger-9.0.1.tar.gz"
 snakemake --dry-run
-nohup snakemake --cores all --sdm conda apptainer --default-resources runtime=720 &
+nohup snakemake --cores all --sdm conda apptainer --default-resources runtime=1380 &
 ```
