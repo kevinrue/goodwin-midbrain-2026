@@ -1,0 +1,101 @@
+---
+title: "umi_stats_all"
+format: html
+---
+
+```{r}
+#| label: library
+#| message: false
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(readr)
+library(scales)
+```
+
+```{r}
+#| label: constants
+umi_breaks <- 10^(-1:10)
+umi_minor_breaks <- rep(c(1, 2, 5), 12) * (10^rep(-1:10, each = 3))
+barcode_breaks <- 10^(-1:10)
+barcode_minor_breaks <- 10^rep(-1:10)
+```
+
+
+```{r}
+#| label: raw_qc_data
+files <- list.files("../results/umi_stats", pattern = "\\.tsv.gz$", full.names = TRUE)
+raw_qc_data <- purrr::map_dfr(files, readr::read_tsv, show_col_types = FALSE)
+raw_qc_data
+```
+
+```{r}
+#| label: raw_qc_data
+raw_qc_data <- raw_qc_data |> 
+  dplyr::group_by(Sample) |> 
+  dplyr::arrange(desc(umi_sum)) |>
+  dplyr::mutate(umi_sum_rank = row_number()) |>
+  dplyr::arrange(desc(genes_detected)) |> 
+  dplyr::mutate(genes_detected_rank = row_number()) |> 
+  dplyr::ungroup()
+```
+
+```{r}
+#| label: plot_umi_rank
+raw_qc_data_dedup <- raw_qc_data |> 
+  distinct(Sample, umi_sum, .keep_all = TRUE)
+raw_qc_data_dedup |> 
+  filter(umi_sum > 0) |> 
+  ggplot(aes(umi_sum_rank, umi_sum, colour = Sample)) +
+  geom_line() +
+  scale_x_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  scale_y_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  guides(
+    colour = guide_legend(override.aes = list(linewidth = 3))
+  ) +
+  labs(
+    x = "Rank",
+    y = "UMI sum"
+  ) +
+  theme_bw()
+```
+
+```{r}
+#| label: plot_genes_detected_rank
+raw_qc_data_dedup <- raw_qc_data |> 
+  distinct(Sample, genes_detected, .keep_all = TRUE)
+raw_qc_data_dedup |> 
+  filter(umi_sum > 0) |> 
+  ggplot(aes(genes_detected_rank, genes_detected, colour = Sample)) +
+  geom_line() +
+  scale_x_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  scale_y_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  guides(
+    colour = guide_legend(override.aes = list(linewidth = 3))
+  ) +
+  labs(
+    x = "Rank",
+    y = "Genes detected"
+  ) +
+  theme_bw()
+```
