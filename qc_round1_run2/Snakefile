@@ -1,0 +1,36 @@
+import os
+import pandas as pd
+
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# read sample sheet
+samples = (
+    pd.read_csv(config["samplesheet"], sep="\t", dtype={"sample": str})
+    .set_index("id", drop=False)
+    .sort_index()
+)
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        expand("results/umi_stats/{sample}.tsv.gz", sample=samples.index)
+
+rule umi_stats:
+    input:
+        raw="data/{sample}/outs/multi/count/raw_feature_bc_matrix.h5",
+        gtf=config["gtf"],
+    output:
+        tsv="results/umi_stats/{sample}.tsv.gz",
+    conda:
+        "envs/r.yaml",
+    log:
+        "logs/umi_stats/{sample}.log",
+    threads: 1
+    resources:
+        mem_mb=8 * 1024,
+        runtime="30m",
+    script:
+        "scripts/umi_stats.R"

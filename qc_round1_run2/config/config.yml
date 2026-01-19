@@ -1,0 +1,3 @@
+samplesheet: config/samples.tsv
+
+gtf: /ceph/project/goodwin/albrecht/cellranger_mkref/results/cellranger_mkref/genes/genes.gtf.gz

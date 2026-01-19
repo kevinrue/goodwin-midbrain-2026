@@ -1,0 +1,26 @@
+---
+title: "setup"
+format: html
+---
+
+```{r}
+#| message: false
+library(readr)
+library(tibble)
+```
+
+```{r}
+sample_ids <- list.files("../../cellranger_round1_run2/results/cellranger/")
+cat(sample_ids, sep = "\n")
+```
+
+```{r}
+tibble_combined <- tibble(
+  id = sample_ids
+)
+```
+
+
+```{r}
+write_tsv(x = tibble_combined, file = "../config/samples.tsv")
+```
