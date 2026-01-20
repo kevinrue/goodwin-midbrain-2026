@@ -21,6 +21,7 @@ rule all:
 rule umi_stats:
     input:
         raw="data/{sample}/outs/multi/count/raw_feature_bc_matrix.h5",
+        filtered="data/{sample}/outs/per_sample_outs/{sample}/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz",
         gtf=config["gtf"],
     output:
         tsv="results/umi_stats/{sample}.tsv.gz",

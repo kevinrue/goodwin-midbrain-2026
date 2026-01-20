@@ -3,13 +3,14 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - r-base
   - bioconductor-biocio
   - bioconductor-delayedarray
   - bioconductor-dropletutils
   - bioconductor-rtracklayer
   - bioconductor-singlecellexperiment
   - bioconductor-summarizedexperiment
+  - r-base
+  - r-matrix
   - r-readr
   - r-stringr
   - r-tibble
