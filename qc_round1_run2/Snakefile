@@ -26,7 +26,7 @@ rule umi_stats:
     output:
         tsv="results/umi_stats/{sample}.tsv.gz",
     conda:
-        "envs/r.yaml",
+        "envs/umi_stats.yaml",
     log:
         "logs/umi_stats/{sample}.log",
     threads: 1

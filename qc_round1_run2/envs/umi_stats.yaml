@@ -1,4 +1,4 @@
-name: r-env
+name: umi_stats
 channels:
   - conda-forge
   - bioconda

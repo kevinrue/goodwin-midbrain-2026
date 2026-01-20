@@ -64,7 +64,8 @@ raw_qc_data_dedup |>
     colour = guide_legend(override.aes = list(linewidth = 3))
   ) +
   labs(
-    x = "Rank",
+    title = "Round 1 - run 2 (20240925_run_2)",
+    x = "Rank (by UMI sum)",
     y = "UMI sum"
   ) +
   theme_bw()
@@ -94,8 +95,34 @@ raw_qc_data_dedup |>
     colour = guide_legend(override.aes = list(linewidth = 3))
   ) +
   labs(
-    x = "Rank",
+    title = "Round 1 - run 2 (20240925_run_2)",
+    x = "Rank (by gene)",
     y = "Genes detected"
   ) +
   theme_bw()
 ```
+
+```{r}
+#| label: plot_mt_pct_rank
+raw_qc_data |> 
+  filter(umi_sum > 100) |> 
+  ggplot(aes(Sample, mt_pct, colour = Sample)) +
+  geom_violin(scale = "width") +
+  scale_y_continuous(
+    breaks = seq(0, 1, by = 0.1),
+    limits = c(0, 1),
+    labels = label_percent()
+    ) +
+  labs(
+    title = "Round 1 - run 2 (20240925_run_2)",
+    subtitle = "Droplet with UMI sum > 100",
+    x = "Sample",
+    y = "Mitochondrial content"
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+```
+
