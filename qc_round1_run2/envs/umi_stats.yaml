@@ -9,8 +9,6 @@ dependencies:
   - bioconductor-rtracklayer
   - bioconductor-singlecellexperiment
   - bioconductor-summarizedexperiment
-  - r-base
-  - r-matrix
   - r-readr
   - r-stringr
   - r-tibble

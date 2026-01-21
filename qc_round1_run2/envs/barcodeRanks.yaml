@@ -1,0 +1,11 @@
+name: umi_stats
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconductor-biocparallel
+  - bioconductor-dropletutils
+  - r-dplyr
+  - r-readr
+  - r-stringr
+  - r-yaml

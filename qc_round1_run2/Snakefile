@@ -16,7 +16,7 @@ samples = (
 # -----------------------------------------------------
 rule all:
     input:
-        expand("results/umi_stats/{sample}.tsv.gz", sample=samples.index)
+        expand("results/barcodeRanks/{sample}.yaml", sample=samples.index)
 
 rule umi_stats:
     input:
@@ -35,3 +35,20 @@ rule umi_stats:
         runtime="30m",
     script:
         "scripts/umi_stats.R"
+
+rule barcodeRanks:
+    input:
+        raw="data/{sample}/outs/multi/count/raw_feature_bc_matrix.h5",
+        umi_stats="results/umi_stats/{sample}.tsv.gz",
+    output:
+        yaml="results/barcodeRanks/{sample}.yaml",
+    conda:
+        "envs/barcodeRanks.yaml",
+    log:
+        "logs/barcodeRanks/{sample}.log",
+    threads: 8
+    resources:
+        mem_mb=8 * 1024,
+        runtime="30m",
+    script:
+        "scripts/barcodeRanks.R"
