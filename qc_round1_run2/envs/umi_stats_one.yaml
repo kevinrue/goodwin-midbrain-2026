@@ -2,9 +2,10 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconductor-biocparallel
-  - bioconductor-dropletutils
   - r-dplyr
+  - r-ggplot2
+  - r-purrr
   - r-readr
+  - r-rmarkdown
+  - r-scales
   - r-stringr
-  - r-yaml

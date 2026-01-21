@@ -16,6 +16,7 @@ samples = (
 # -----------------------------------------------------
 rule all:
     input:
+        expand("reports/umi_stats_one/{sample}.html", sample=samples.index),
         expand("results/barcodeRanks/{sample}.yaml", sample=samples.index)
 
 rule umi_stats:
@@ -35,6 +36,20 @@ rule umi_stats:
         runtime="30m",
     script:
         "scripts/umi_stats.R"
+
+rule umi_stats_one:
+    input:
+        umi_stats="results/umi_stats/{sample}.tsv.gz",
+    output:
+        html="reports/umi_stats_one/{sample}.html",
+    conda:
+        "envs/umi_stats_one.yaml"
+    threads: 1
+    resources:
+        mem="8G",
+        runtime="10m",
+    script:
+        "notebooks/umi_stats_one.Rmd"
 
 rule barcodeRanks:
     input:

@@ -1,0 +1,177 @@
+---
+title: "umi_stats_one"
+format: html
+---
+
+```{r library, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(readr)
+library(scales)
+library(stringr)
+```
+
+```{r constants, include=FALSE}
+umi_breaks <- 10^(-1:10)
+umi_minor_breaks <- rep(c(1, 2, 5), 12) * (10^rep(-1:10, each = 3))
+barcode_breaks <- 10^(-1:10)
+barcode_minor_breaks <- 10^rep(-1:10)
+```
+
+```{r snakemake, include=FALSE}
+if (interactive()) {
+  umi_stats_file <- "../results/umi_stats/WPPm024hrs_rep1.tsv.gz"
+} else {
+  umi_stats_file <- snakemake@input[["umi_stats"]]
+}
+sample_id <- basename(str_remove(umi_stats_file, ".tsv.gz$"))
+```
+
+## Information
+
+- **Sample:** `r sample_id`
+
+```{r raw_qc_data, include=FALSE}
+raw_qc_data <-readr::read_tsv(umi_stats_file, show_col_types = FALSE)
+```
+
+```{r umi_ranks, include=FALSE}
+raw_qc_data <- raw_qc_data |> 
+  dplyr::arrange(desc(umi_sum)) |>
+  dplyr::mutate(umi_sum_rank = row_number()) |>
+  dplyr::arrange(desc(genes_detected)) |> 
+  dplyr::mutate(genes_detected_rank = row_number())
+```
+
+## Ranking barcodes by total UMI
+
+```{r plot_umi_rank, fig.width=12, fig.height=5, echo=FALSE}
+raw_qc_data |> 
+  filter(umi_sum > 10) |> 
+  ggplot(aes(
+    x = umi_sum_rank,
+    y = umi_sum,
+    colour = cellranger_filtered
+  )) +
+  geom_point(size = 0.1) +
+  facet_wrap(
+    vars(cellranger_filtered),
+    ncol = 2,
+    labeller = label_both
+  ) +
+  scale_x_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  scale_y_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  guides(
+    colour = guide_legend(override.aes = list(linewidth = 3))
+  ) +
+  labs(
+    title = "Round 1 - run 2 (20240925_run_2)",
+    subtitle = str_glue(
+      "{sample_id} - {cells} cells - {empty} empty",
+      sample_id = sample_id,
+      cells = sum(raw_qc_data$cellranger_filtered),
+      empty = sum(!raw_qc_data$cellranger_filtered)
+    ),
+    x = "Rank (by UMI sum)",
+    y = "UMI sum"
+  ) +
+  theme_bw()
+```
+
+Notes:
+
+-  Only droplet with more than 10 UMI are shown.
+
+## Ranking barcodes by number of genes detected
+
+```{r plot_genes_detected_rank, fig.width=12, fig.height=5, echo=FALSE}
+raw_qc_data |> 
+  filter(genes_detected > 10) |> 
+  ggplot(aes(
+    x = genes_detected_rank,
+    y = genes_detected,
+    colour = cellranger_filtered
+  )) +
+  geom_point(size = 0.1) +
+  facet_wrap(
+    vars(cellranger_filtered),
+    ncol = 2,
+    labeller = label_both
+  ) +
+  scale_x_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  scale_y_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = scales::label_number(scale_cut = scales::cut_short_scale()),
+    limits = c(1, NA)
+    ) +
+  guides(
+    colour = guide_legend(override.aes = list(linewidth = 3))
+  ) +
+  labs(
+    title = "Round 1 - run 2 (20240925_run_2)",
+    subtitle = str_glue(
+      "{sample_id} - {cells} cells - {empty} empty (Droplet with UMI sum > 10)",
+      sample_id = sample_id,
+      cells = sum(raw_qc_data$cellranger_filtered),
+      empty = sum(!raw_qc_data$cellranger_filtered)
+    ),
+    x = "Rank (by gene)",
+    y = "Genes detected"
+  ) +
+  theme_bw()
+```
+
+Notes:
+
+-  Only droplet with more than 10 UMI are shown.
+
+## Mitochondrial content
+
+```{r plot_mt_pct_rank, echo=FALSE}
+raw_qc_data |> 
+  filter(umi_sum > 100) |> 
+  ggplot(aes(
+    x = cellranger_filtered,
+    y = mt_pct,
+    colour = cellranger_filtered
+  )) +
+  geom_violin(scale = "width") +
+  scale_y_continuous(
+    breaks = seq(0, 1, by = 0.1),
+    limits = c(0, 1),
+    labels = label_percent()
+    ) +
+  labs(
+    title = "Round 1 - run 2 (20240925_run_2)",
+    subtitle = str_glue(
+      "{sample_id} - {cells} cells - {empty} empty",
+      sample_id = sample_id,
+      cells = sum(raw_qc_data$cellranger_filtered),
+      empty = sum(!raw_qc_data$cellranger_filtered)
+    ),
+    x = "Sample",
+    y = "Mitochondrial content"
+  ) +
+  theme_bw()
+```
+
+Notes:
+
+-  Only droplet with UMI sum over 100 are shown.
