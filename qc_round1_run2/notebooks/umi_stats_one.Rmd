@@ -1,5 +1,5 @@
 ---
-title: "umi_stats_one"
+title: "Quality control report"
 format: html
 ---
 

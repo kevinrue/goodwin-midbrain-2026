@@ -10,3 +10,5 @@ results/
 sps-*
 # cellranger
 *.mro
+# rmarkdown
+*.html
