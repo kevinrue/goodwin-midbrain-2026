@@ -5,11 +5,9 @@ conda activate snakemake
 ```bash
 PROJECT_DIR=/ceph/project/goodwin
 WORKFLOW_DIR=$PROJECT_DIR/albrecht/workflow-qc
-RUN_DIR=$PROJECT_DIR/albrecht/qc_round1_run2
+RUN_DIR=$PROJECT_DIR/albrecht/qc_round3
 DEPLOY_DIR=$PROJECT_DIR/datashare/albrecht/$(basename $RUN_DIR)
 ```
-
-Running the workflow:
 
 ```bash
 cd $WORKFLOW_DIR

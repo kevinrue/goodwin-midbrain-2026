@@ -13,3 +13,5 @@ sps-*
 *.mro
 # rmarkdown
 *.html
+# md5sum
+md5sum.*
