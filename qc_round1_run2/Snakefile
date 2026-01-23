@@ -16,7 +16,7 @@ samples = (
 # -----------------------------------------------------
 rule all:
     input:
-        expand("reports/umi_stats_one/{sample}.html", sample=samples.index),
+        "reports/index.html",
         expand("results/barcodeRanks/{sample}.yaml", sample=samples.index)
 
 rule umi_stats:
@@ -63,7 +63,24 @@ rule barcodeRanks:
         "logs/barcodeRanks/{sample}.log",
     threads: 8
     resources:
-        mem_mb=8 * 1024,
+        mem_mb="8G",
         runtime="30m",
     script:
         "scripts/barcodeRanks.R"
+
+
+rule report_index:
+    input:
+        expand("reports/umi_stats_one/{sample}.html", sample=samples.index),
+    params:
+        samples=config["samplesheet"],
+    output:
+        "reports/index.html",
+    conda:
+        "envs/umi_stats_one.yaml"
+    threads: 1
+    resources:
+        mem="8G",
+        runtime="10m",
+    script:
+        "notebooks/index.Rmd"

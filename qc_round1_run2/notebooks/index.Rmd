@@ -1,0 +1,34 @@
+---
+title: "Round 1, run 2"
+output: html_document
+---
+
+<!-- TODO: Add a statement "last updated on <date>" that is automatically updated when the report is rendered. -->
+
+```{r libraries, include=FALSE}
+library(readr)
+library(stringr)
+```
+
+```{r snakemake, include=FALSE}
+report_paths <- snakemake@input |>
+  str_remove("reports/")
+samples_info <- read_tsv(
+  snakemake@params[["samples"]],
+  show_col_types = FALSE
+)
+```
+
+## Quality control reports
+
+<details>
+  <summary>Individual reports</summary>
+  
+```{r, echo=FALSE, results='asis'}
+path_samples <- grep("^umi_stats_one/", report_paths, value = TRUE)
+names(path_samples) <- fs::path_ext_remove(basename(path_samples))
+path_samples <- path_samples[samples_info$id]
+cat(sprintf("- [%s](%s)", names(path_samples), path_samples), sep = "\n")
+```
+
+</details>

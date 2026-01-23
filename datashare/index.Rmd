@@ -1,0 +1,32 @@
+---
+title: "Index"
+output: html_document
+---
+
+```{r libraries, include=FALSE}
+library(dplyr)
+library(readr)
+library(stringr)
+```
+
+## Round 1 run 2
+
+```{r, include=FALSE}
+sample_ids <- read_tsv(
+  file = "/ceph/project/goodwin/albrecht/qc_round1_run2/config/samples.tsv",
+  show_col_types = FALSE) |> 
+  pull(id)
+```
+
+### Quality control
+
+<details>
+  <summary>Individual reports</summary>
+
+```{r, echo=FALSE, results='asis'}
+file_paths <- str_glue("qc_round1_run2/umi_stats_one/{sample_id}.html", sample_id = sample_ids)
+names(file_paths) <- fs::path_ext_remove(basename(file_paths))
+cat(sprintf("- [%s](%s)", names(file_paths), file_paths), sep = "\n")
+```
+
+</details>
