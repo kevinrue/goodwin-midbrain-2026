@@ -4,4 +4,4 @@ gtf: /ceph/project/goodwin/albrecht/cellranger_mkref/results/cellranger_mkref/ge
 
 experiment:
   # main title for all plots
-  title: "Round 1 - run 2 (20240925_run_2)"
+  title: "Round 2 (20250304_run_1)"

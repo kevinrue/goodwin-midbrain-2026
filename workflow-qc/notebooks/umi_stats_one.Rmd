@@ -20,11 +20,8 @@ barcode_minor_breaks <- 10^rep(-1:10)
 ```
 
 ```{r snakemake, include=FALSE}
-if (interactive()) {
-  umi_stats_file <- "../results/umi_stats/WPPm024hrs_rep1.tsv.gz"
-} else {
-  umi_stats_file <- snakemake@input[["umi_stats"]]
-}
+umi_stats_file <- snakemake@input[["umi_stats"]]
+experiment_title <- snakemake@params[["title"]]
 sample_id <- basename(str_remove(umi_stats_file, ".tsv.gz$"))
 ```
 
@@ -76,7 +73,7 @@ raw_qc_data |>
     colour = guide_legend(override.aes = list(linewidth = 3))
   ) +
   labs(
-    title = "Round 1 - run 2 (20240925_run_2)",
+    title = experiment_title,
     subtitle = str_glue(
       "{sample_id} - {cells} cells - {empty} empty",
       sample_id = sample_id,
@@ -125,7 +122,7 @@ raw_qc_data |>
     colour = guide_legend(override.aes = list(linewidth = 3))
   ) +
   labs(
-    title = "Round 1 - run 2 (20240925_run_2)",
+    title = experiment_title,
     subtitle = str_glue(
       "{sample_id} - {cells} cells - {empty} empty (Droplet with UMI sum > 10)",
       sample_id = sample_id,
@@ -159,7 +156,7 @@ raw_qc_data |>
     labels = label_percent()
     ) +
   labs(
-    title = "Round 1 - run 2 (20240925_run_2)",
+    title = experiment_title,
     subtitle = str_glue(
       "{sample_id} - {cells} cells - {empty} empty",
       sample_id = sample_id,

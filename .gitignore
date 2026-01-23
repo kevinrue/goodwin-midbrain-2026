@@ -6,6 +6,7 @@ nohup.out
 data/
 logs/
 results/
+conda/
 # JADE
 sps-*
 # cellranger

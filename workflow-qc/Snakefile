@@ -42,6 +42,8 @@ rule umi_stats_one:
         umi_stats="results/umi_stats/{sample}.tsv.gz",
     output:
         html="reports/umi_stats_one/{sample}.html",
+    params:
+        title=config["experiment"]["title"],
     conda:
         "envs/umi_stats_one.yaml"
     threads: 1
@@ -74,6 +76,7 @@ rule report_index:
         expand("reports/umi_stats_one/{sample}.html", sample=samples.index),
     params:
         samples=config["samplesheet"],
+        title=config["experiment"]["title"],
     output:
         "reports/index.html",
     conda:

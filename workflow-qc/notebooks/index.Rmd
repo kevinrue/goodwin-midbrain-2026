@@ -1,5 +1,5 @@
 ---
-title: "Round 1, run 2"
+title: "Quality Control - Index"
 output: html_document
 ---
 
@@ -18,6 +18,10 @@ samples_info <- read_tsv(
   show_col_types = FALSE
 )
 ```
+
+## Information
+
+- **Experiment:** `r snakemake@params[["title"]]`
 
 ## Quality control reports
 
