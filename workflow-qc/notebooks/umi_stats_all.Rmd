@@ -24,12 +24,16 @@ umi_stats_files <- snakemake@input[["umi_stats"]]
 experiment_title <- snakemake@params[["title"]]
 umi_min <- snakemake@params[["umi_min"]]
 genes_min <- snakemake@params[["genes_min"]]
+mt_max <- snakemake@params[["mt_max"]]
 sample_ids <- basename(str_remove(umi_stats_files, ".tsv.gz"))
 ```
 
 ## Information
 
 - **Experiment:** `r experiment_title`
+- **Minimum UMI sum:** `r umi_min`
+- **Minimum genes detected:** `r genes_min`
+- **Maximum mitochondrial content:** `r paste0(mt_max * 100, "%")`
 
 ```{r raw_qc_data, include=FALSE}
 raw_qc_data <- purrr::map_dfr(
@@ -38,7 +42,8 @@ raw_qc_data <- purrr::map_dfr(
     show_col_types = FALSE
   ) |> 
   mutate(
-    Sample = factor(Sample, levels = sample_ids)
+    Sample = factor(Sample, levels = sample_ids),
+    cellranger_filtered = factor(cellranger_filtered, levels = c(TRUE, FALSE), labels = c("cell", "empty"))
   )
 raw_qc_data
 ```
@@ -152,6 +157,12 @@ raw_qc_data |>
   filter(umi_sum > 100) |> 
   ggplot(aes(Sample, mt_pct, colour = cellranger_filtered)) +
   geom_violin(scale = "width") +
+  geom_hline(
+    yintercept = mt_max,
+    linetype = "dashed",
+    linewidth = 0.1,
+    colour = "red"
+    ) +
   scale_y_continuous(
     breaks = seq(0, 1, by = 0.1),
     limits = c(0, 1),
@@ -159,7 +170,6 @@ raw_qc_data |>
   ) +
   labs(
     title = experiment_title,
-    subtitle = "Droplet with UMI sum > 100",
     x = "Sample",
     y = "Mitochondrial content"
   ) +
@@ -173,3 +183,20 @@ raw_qc_data |>
 Notes:
 
 -  Only droplet with UMI sum over 100 are shown.
+
+## Statistics after filtering
+
+```{r}
+raw_qc_data |> 
+  filter(
+    cellranger_filtered == "cell" &
+    umi_sum >= umi_min &
+    genes_detected >= genes_min &
+    mt_pct <= mt_max
+  ) |> 
+  summarise(
+    cells_pass = n(),
+    .by = Sample
+  )
+```
+

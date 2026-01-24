@@ -10,3 +10,4 @@ filter:
   barcodes:
     umi_min: 2500
     genes_min: 1000
+    mt_max: 0.2
