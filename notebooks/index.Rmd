@@ -1,0 +1,16 @@
+---
+title: "Goodwin project - Index"
+output: html_document
+---
+
+## Round 1
+
+[Quality control reports](./qc_round1_run2/)
+
+## Round 2
+
+[Quality control reports](./qc_round2/)
+
+## Round 3
+
+[Quality control reports](./qc_round3/)
