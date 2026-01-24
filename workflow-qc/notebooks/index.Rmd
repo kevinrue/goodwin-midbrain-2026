@@ -25,14 +25,19 @@ samples_info <- read_tsv(
 
 ## Quality control reports
 
+```{r, echo=FALSE, results='asis'}
+stopifnot("umi_stats_all.html" %in% report_paths)
+cat(str_glue("[All samples](umi_stats_all.html)"))
+```
+
 <details>
   <summary>Individual reports</summary>
   
 ```{r, echo=FALSE, results='asis'}
-path_samples <- grep("^umi_stats_one/", report_paths, value = TRUE)
-names(path_samples) <- fs::path_ext_remove(basename(path_samples))
-path_samples <- path_samples[samples_info$id]
-cat(sprintf("- [%s](%s)", names(path_samples), path_samples), sep = "\n")
+sample_reports <- grep("^umi_stats_one/", report_paths, value = TRUE)
+names(sample_reports) <- fs::path_ext_remove(basename(sample_reports))
+sample_reports <- sample_reports[samples_info$id]
+cat(str_glue("- [{label}]({href})", label = names(sample_reports), href = sample_reports), sep = "\n")
 ```
 
 </details>

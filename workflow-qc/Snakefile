@@ -93,6 +93,7 @@ rule barcodeRanks:
 rule report_index:
     input:
         expand("reports/umi_stats_one/{sample}.html", sample=samples.index),
+        "reports/umi_stats_all.html",
     params:
         samples=config["samplesheet"],
         title=config["experiment"]["title"],
