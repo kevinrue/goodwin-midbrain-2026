@@ -197,6 +197,7 @@ raw_qc_data |>
   summarise(
     cells_pass = n(),
     .by = Sample
-  )
+  ) |> 
+  arrange(desc(cells_pass))
 ```
 

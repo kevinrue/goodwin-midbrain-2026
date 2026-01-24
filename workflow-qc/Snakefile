@@ -65,6 +65,7 @@ rule umi_stats_all:
         title=config["experiment"]["title"],
         umi_min=config["filter"]["barcodes"]["umi_min"],
         genes_min=config["filter"]["barcodes"]["genes_min"],
+        mt_max=config["filter"]["barcodes"]["mt_max"],
     conda:
         "envs/umi_stats_one.yaml"
     threads: 1
