@@ -1,6 +1,10 @@
 ---
 title: "Quality control report (all)"
-format: html
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
 ---
 
 ```{r library, include=FALSE}
