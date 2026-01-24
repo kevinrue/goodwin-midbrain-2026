@@ -17,6 +17,7 @@ Run the workflow:
 cd $WORKFLOW_DIR
 snakemake --dry-run --directory $RUN_DIR --conda-prefix ../conda
 nohup snakemake --sdm conda --directory $RUN_DIR --conda-prefix ../conda > $RUN_DIR/nohup.out 2>&1 &
+rm -rf $RUN_DIR/sps-*
 ```
 
 Share the reports:
