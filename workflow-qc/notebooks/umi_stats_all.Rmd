@@ -1,5 +1,5 @@
 ---
-title: "umi_stats_all"
+title: "Quality control report (all)"
 format: html
 ---
 
@@ -9,6 +9,7 @@ library(ggplot2)
 library(purrr)
 library(readr)
 library(scales)
+library(stringr)
 ```
 
 ```{r constants, include=FALSE}
@@ -21,13 +22,23 @@ barcode_minor_breaks <- 10^rep(-1:10)
 ```{r snakemake, include=FALSE}
 umi_stats_files <- snakemake@input[["umi_stats"]]
 experiment_title <- snakemake@params[["title"]]
+umi_min <- snakemake@params[["umi_min"]]
+genes_min <- snakemake@params[["genes_min"]]
+sample_ids <- basename(str_remove(umi_stats_files, ".tsv.gz"))
 ```
+
+## Information
+
+- **Experiment:** `r experiment_title`
 
 ```{r raw_qc_data, include=FALSE}
 raw_qc_data <- purrr::map_dfr(
   umi_stats_files,
    readr::read_tsv,
     show_col_types = FALSE
+  ) |> 
+  mutate(
+    Sample = factor(Sample, levels = sample_ids)
   )
 raw_qc_data
 ```
@@ -42,12 +53,20 @@ raw_qc_data <- raw_qc_data |>
   dplyr::ungroup()
 ```
 
+## Ranking barcodes by total UMI
+
 ```{r plot_umi_rank, fig.width=12, fig.height=5, echo=FALSE}
 raw_qc_data |> 
   filter(umi_sum > 10) |> 
   distinct(Sample, umi_sum, .keep_all = TRUE) |> 
   ggplot(aes(umi_sum_rank, umi_sum, colour = Sample)) +
   geom_line() +
+  geom_hline(
+    yintercept = umi_min,
+    linetype = "dashed",
+    linewidth = 0.1,
+    colour = "red"
+    ) +
   facet_wrap(
     vars(cellranger_filtered),
     ncol = 2,
@@ -76,12 +95,24 @@ raw_qc_data |>
   theme_bw()
 ```
 
+Notes:
+
+-  Only droplet with more than 10 UMI are shown.
+
+## Ranking barcodes by number of genes detected
+
 ```{r plot_genes_detected_rank, fig.width=12, fig.height=5, echo=FALSE}
 raw_qc_data |> 
   filter(umi_sum > 10) |> 
   distinct(Sample, genes_detected, .keep_all = TRUE) |> 
   ggplot(aes(genes_detected_rank, genes_detected, colour = Sample)) +
   geom_line() +
+  geom_hline(
+    yintercept = genes_min,
+    linetype = "dashed",
+    linewidth = 0.1,
+    colour = "red"
+    ) +
   facet_wrap(
     vars(cellranger_filtered),
     ncol = 2,
@@ -110,7 +141,13 @@ raw_qc_data |>
   theme_bw()
 ```
 
-```{r plot_mt_pct_rank, echo=FALSE}
+Notes:
+
+-  Only droplet with more than 10 UMI are shown.
+
+## Mitochondrial content
+
+```{r plot_mt_pct_rank, fig.width=12, fig.height=5, echo=FALSE}
 raw_qc_data |> 
   filter(umi_sum > 100) |> 
   ggplot(aes(Sample, mt_pct, colour = cellranger_filtered)) +

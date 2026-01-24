@@ -1,5 +1,5 @@
 ---
-title: "Quality control report"
+title: "Quality control report (per sample)"
 format: html
 ---
 
@@ -27,6 +27,7 @@ sample_id <- basename(str_remove(umi_stats_file, ".tsv.gz$"))
 
 ## Information
 
+- **Experiment:** `r experiment_title`
 - **Sample:** `r sample_id`
 
 ```{r raw_qc_data, include=FALSE}
@@ -75,7 +76,7 @@ raw_qc_data |>
   labs(
     title = experiment_title,
     subtitle = str_glue(
-      "{sample_id} - {cells} cells - {empty} empty",
+      "{sample_id} - {cells} cells",
       sample_id = sample_id,
       cells = sum(raw_qc_data$cellranger_filtered),
       empty = sum(!raw_qc_data$cellranger_filtered)
@@ -124,7 +125,7 @@ raw_qc_data |>
   labs(
     title = experiment_title,
     subtitle = str_glue(
-      "{sample_id} - {cells} cells - {empty} empty (Droplet with UMI sum > 10)",
+      "{sample_id} - {cells} cells",
       sample_id = sample_id,
       cells = sum(raw_qc_data$cellranger_filtered),
       empty = sum(!raw_qc_data$cellranger_filtered)
