@@ -12,6 +12,8 @@ samples = (
     .sort_index()
 )
 
+localrules: report_index
+
 # target rules
 # -----------------------------------------------------
 rule all:
