@@ -1,0 +1,13 @@
+samplesheet: config/samples.tsv
+
+gtf: /ceph/project/goodwin/albrecht/cellranger_mkref/results/cellranger_mkref/genes/genes.gtf.gz
+
+experiment:
+  # main title for all plots
+  title: "Round 2 (20250304_run_1)"
+
+filter:
+  barcodes:
+    umi_min: 2500
+    genes_min: 1000
+    mt_max: 0.2
