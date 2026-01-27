@@ -5,11 +5,21 @@ conda activate snakemake
 Set up environment variables:
 
 ```bash
-PROJECT_DIR=/ceph/project/goodwin
-PROJECT_CONDA_DIR=$PROJECT_DIR/albrecht/conda
-WORKFLOW_DIR=$PROJECT_DIR/albrecht/workflow-cellranger_multi
-RUN_DIR=$PROJECT_DIR/albrecht/cellranger_multi/round1_run1
-export CELLRANGER_TARBALL="/ceph/project/goodwin/albrecht/resources/cellranger-9.0.1.tar.gz"
+PROJECT_DIR="/ceph/project/goodwin"
+PROJECT_CONDA_DIR="$PROJECT_DIR/albrecht/conda"
+WORKFLOW_DIR="$PROJECT_DIR/albrecht/workflow-cellranger_multi"
+RUN_DIR="$PROJECT_DIR/albrecht/round2/cellranger"
+export CELLRANGER_TARBALL="$PROJECT_DIR/albrecht/resources/cellranger-9.0.1.tar.gz"
+```
+
+Configure the workflow:
+
+```bash
+cd $RUN_DIR
+mkdir data
+# add symlinks to FASTQ files
+cp -r $WORKFLOW_DIR/config $RUN_DIR
+# edit as needed
 ```
 
 Run the workflow:
