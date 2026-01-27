@@ -34,7 +34,7 @@ nohup snakemake \
   --sdm conda \
   --directory $RUN_DIR \
   --conda-prefix $PROJECT_CONDA_DIR \
-  --set-resources cellranger_multi_run:runtime=720 \
+  --set-resources cellranger_multi_run:runtime=1080 \
   > $RUN_DIR/nohup.out 2>&1 &
 rm -rf $RUN_DIR/sps-*
 ```
