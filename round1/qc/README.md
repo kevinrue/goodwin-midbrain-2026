@@ -8,8 +8,9 @@ Set up environment variables:
 PROJECT_DIR=/ceph/project/goodwin
 PROJECT_CONDA_DIR="$PROJECT_DIR/albrecht/conda"
 WORKFLOW_DIR=$PROJECT_DIR/albrecht/workflow-qc
-RUN_DIR=$PROJECT_DIR/albrecht/round1/qc
-DEPLOY_DIR=$PROJECT_DIR/datashare/albrecht/$(basename $RUN_DIR)
+RUN_BASEDIR=round1/qc
+RUN_DIR=$PROJECT_DIR/albrecht/$RUN_BASEDIR
+DEPLOY_DIR=$PROJECT_DIR/datashare/albrecht/$RUN_BASEDIR
 ```
 
 Run the workflow:

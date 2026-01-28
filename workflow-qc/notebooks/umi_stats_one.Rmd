@@ -17,6 +17,10 @@ umi_breaks <- 10^(-1:10)
 umi_minor_breaks <- rep(c(1, 2, 5), 12) * (10^rep(-1:10, each = 3))
 barcode_breaks <- 10^(-1:10)
 barcode_minor_breaks <- 10^rep(-1:10)
+scale_colour_cell_empty <- c(
+  cell = "#0fbdb4",
+  empty = "#e35f4b"
+)
 ```
 
 ```{r snakemake, include=FALSE}
@@ -31,7 +35,13 @@ sample_id <- basename(str_remove(umi_stats_file, ".tsv.gz$"))
 - **Sample:** `r sample_id`
 
 ```{r raw_qc_data, include=FALSE}
-raw_qc_data <-readr::read_tsv(umi_stats_file, show_col_types = FALSE)
+raw_qc_data <- read_tsv(
+  file = umi_stats_file,
+  show_col_types = FALSE
+  ) |> 
+  mutate(
+    cellranger_filtered = factor(cellranger_filtered, levels = c(TRUE, FALSE), labels = c("cell", "empty"))
+  )
 ```
 
 ```{r umi_ranks, include=FALSE}
@@ -70,6 +80,9 @@ raw_qc_data |>
     labels = scales::label_number(scale_cut = scales::cut_short_scale()),
     limits = c(1, NA)
     ) +
+  scale_colour_manual(
+    values = scale_colour_cell_empty
+  ) +
   guides(
     colour = guide_legend(override.aes = list(size = 3))
   ) +
@@ -78,8 +91,7 @@ raw_qc_data |>
     subtitle = str_glue(
       "{sample_id} - {cells} cells",
       sample_id = sample_id,
-      cells = sum(raw_qc_data$cellranger_filtered),
-      empty = sum(!raw_qc_data$cellranger_filtered)
+      cells = sum(raw_qc_data$cellranger_filtered == "cell")
     ),
     x = "Rank (by UMI sum)",
     y = "UMI sum"
@@ -89,6 +101,7 @@ raw_qc_data |>
 
 Notes:
 
+- The plot reports the number of cells filtered by CellRanger.
 -  Only droplet with more than 10 UMI are shown.
 
 ## Ranking barcodes by number of genes detected
@@ -119,6 +132,9 @@ raw_qc_data |>
     labels = scales::label_number(scale_cut = scales::cut_short_scale()),
     limits = c(1, NA)
     ) +
+  scale_colour_manual(
+    values = scale_colour_cell_empty
+  ) +
   guides(
     colour = guide_legend(override.aes = list(size = 3))
   ) +
@@ -127,8 +143,7 @@ raw_qc_data |>
     subtitle = str_glue(
       "{sample_id} - {cells} cells",
       sample_id = sample_id,
-      cells = sum(raw_qc_data$cellranger_filtered),
-      empty = sum(!raw_qc_data$cellranger_filtered)
+      cells = sum(raw_qc_data$cellranger_filtered == "cell")
     ),
     x = "Rank (by gene)",
     y = "Genes detected"
@@ -138,6 +153,7 @@ raw_qc_data |>
 
 Notes:
 
+- The plot reports the number of cells filtered by CellRanger.
 -  Only droplet with more than 10 UMI are shown.
 
 ## Mitochondrial content
@@ -156,13 +172,15 @@ raw_qc_data |>
     limits = c(0, 1),
     labels = label_percent()
     ) +
+  scale_colour_manual(
+    values = scale_colour_cell_empty
+  ) +
   labs(
     title = experiment_title,
     subtitle = str_glue(
-      "{sample_id} - {cells} cells - {empty} empty",
+      "{sample_id} - {cells} cells",
       sample_id = sample_id,
-      cells = sum(raw_qc_data$cellranger_filtered),
-      empty = sum(!raw_qc_data$cellranger_filtered)
+      cells = sum(raw_qc_data$cellranger_filtered == "cell")
     ),
     x = "Sample",
     y = "Mitochondrial content"
@@ -172,4 +190,5 @@ raw_qc_data |>
 
 Notes:
 
--  Only droplet with UMI sum over 100 are shown.
+- The plot reports the number of cells filtered by CellRanger.
+- Only droplet with UMI sum over 100 are shown.

@@ -5,12 +5,12 @@ output: html_document
 
 ## Round 1
 
-[Quality control reports](./qc_round1_run2/)
+[Quality control reports](./round1/qc/)
 
 ## Round 2
 
-[Quality control reports](./qc_round2/)
+[Quality control reports](./round2/qc/)
 
 ## Round 3
 
-[Quality control reports](./qc_round3/)
+[Quality control reports](./round3/qc/)
