@@ -1,2 +1,17 @@
 id	bam	barcodes
+WPPm048hrs_rep1	data/cellranger/WPPm048hrs_rep1/outs/per_sample_outs/WPPm048hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPm048hrs_rep1.tsv.gz
+WPPm048hrs_rep2	data/cellranger/WPPm048hrs_rep2/outs/per_sample_outs/WPPm048hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPm048hrs_rep2.tsv.gz
+WPPm024hrs_rep1	data/cellranger/WPPm024hrs_rep1/outs/per_sample_outs/WPPm024hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPm024hrs_rep1.tsv.gz
+WPPm024hrs_rep2	data/cellranger/WPPm024hrs_rep2/outs/per_sample_outs/WPPm024hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPm024hrs_rep2.tsv.gz
+WPPp000hrs_rep1	data/cellranger/WPPp000hrs_rep1/outs/per_sample_outs/WPPp000hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp000hrs_rep1.tsv.gz
+WPPp000hrs_rep2	data/cellranger/WPPp000hrs_rep2/outs/per_sample_outs/WPPp000hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPp000hrs_rep2.tsv.gz
+WPPp024hrs_rep1	data/cellranger/WPPp024hrs_rep1/outs/per_sample_outs/WPPp024hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp024hrs_rep1.tsv.gz
+WPPp024hrs_rep2	data/cellranger/WPPp024hrs_rep2/outs/per_sample_outs/WPPp024hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPp024hrs_rep2.tsv.gz
+WPPp048hrs_rep1	data/cellranger/WPPp048hrs_rep1/outs/per_sample_outs/WPPp048hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp048hrs_rep1.tsv.gz
+WPPp048hrs_rep2	data/cellranger/WPPp048hrs_rep2/outs/per_sample_outs/WPPp048hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPp048hrs_rep2.tsv.gz
+WPPp072hrs_rep1	data/cellranger/WPPp072hrs_rep1/outs/per_sample_outs/WPPp072hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp072hrs_rep1.tsv.gz
+WPPp072hrs_rep2	data/cellranger/WPPp072hrs_rep2/outs/per_sample_outs/WPPp072hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPp072hrs_rep2.tsv.gz
+WPPp096hrs_rep1	data/cellranger/WPPp096hrs_rep1/outs/per_sample_outs/WPPp096hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp096hrs_rep1.tsv.gz
+WPPp096hrs_rep2	data/cellranger/WPPp096hrs_rep2/outs/per_sample_outs/WPPp096hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPp096hrs_rep2.tsv.gz
 WPPp120hrs_rep1	data/cellranger/WPPp120hrs_rep1/outs/per_sample_outs/WPPp120hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp120hrs_rep1.tsv.gz
+WPPp120hrs_rep2	data/cellranger/WPPp120hrs_rep2/outs/per_sample_outs/WPPp120hrs_rep2/count/sample_alignments.bam	data/filter_barcodes/WPPp120hrs_rep2.tsv.gz
