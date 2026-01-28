@@ -24,7 +24,7 @@ nohup snakemake \
   --directory $RUN_DIR \
   --conda-prefix $PROJECT_CONDA_DIR \
   > $RUN_DIR/nohup.out 2>&1 &
-rm -rf $RUN_DIR/sps-*
+rm -rfv $RUN_DIR/sps-*
 ```
 
 Share the reports:

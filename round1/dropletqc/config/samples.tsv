@@ -1,2 +1,2 @@
 id	bam	barcodes
-WPPp120hrs_rep1	data/WPPp120hrs_rep1/outs/per_sample_outs/WPPp120hrs_rep1/count/sample_alignments.bam	data/WPPp120hrs_rep1/outs/per_sample_outs/WPPp120hrs_rep1/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz
+WPPp120hrs_rep1	data/cellranger/WPPp120hrs_rep1/outs/per_sample_outs/WPPp120hrs_rep1/count/sample_alignments.bam	data/filter_barcodes/WPPp120hrs_rep1.tsv.gz

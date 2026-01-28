@@ -20,7 +20,8 @@ rule all:
     input:
         "reports/index.html",
         "reports/umi_stats_all.html",
-        expand("results/barcodeRanks/{sample}.yaml", sample=samples.index)
+        expand("results/filter_barcodes/{sample}.tsv.gz", sample=samples.index),
+        expand("results/barcodeRanks/{sample}.yaml", sample=samples.index),
 
 rule umi_stats:
     input:
@@ -74,6 +75,26 @@ rule umi_stats_all:
         runtime="20m",
     script:
         "notebooks/umi_stats_all.Rmd"
+
+rule filter_barcodes:
+    input:
+        umi_stats="results/umi_stats/{sample}.tsv.gz",
+    output:
+        tsv="results/filter_barcodes/{sample}.tsv.gz",
+    params:
+        umi_min=config["filter"]["barcodes"]["umi_min"],
+        genes_min=config["filter"]["barcodes"]["genes_min"],
+        mt_max=config["filter"]["barcodes"]["mt_max"],
+    conda:
+        "envs/umi_stats_one.yaml",
+    log:
+        "logs/filter_barcodes/{sample}.log",
+    threads: 1
+    resources:
+        mem_mb="8G",
+        runtime="5m",
+    script:
+        "scripts/filter_barcodes.R"
 
 rule barcodeRanks:
     input:
