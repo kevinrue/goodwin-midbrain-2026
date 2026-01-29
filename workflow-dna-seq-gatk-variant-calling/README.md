@@ -9,6 +9,7 @@ PROJECT_DIR="/ceph/project/goodwin"
 PROJECT_CONDA_DIR="$PROJECT_DIR/albrecht/conda"
 WORKFLOW_DIR="$PROJECT_DIR/albrecht/workflow-dna-seq-gatk-variant-calling"
 RUN_DIR="$WORKFLOW_DIR"
+DEPLOY_DIR="$PROJECT_DIR/datashare/albrecht/dna-seq"
 ```
 
 Configure the workflow:
@@ -34,4 +35,11 @@ nohup snakemake \
   --conda-prefix $PROJECT_CONDA_DIR \
   > $RUN_DIR/nohup.out 2>&1 &
 rm -rf $RUN_DIR/sps-*
+```
+
+Share the reports:
+
+```bash
+mkdir -p $DEPLOY_DIR
+rsync -avz $RUN_DIR/reports/* $DEPLOY_DIR
 ```

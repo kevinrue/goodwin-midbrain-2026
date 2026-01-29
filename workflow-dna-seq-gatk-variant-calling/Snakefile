@@ -25,12 +25,14 @@ FASTQC_ZIP_OUTPUTS = [
     for read in ["r1", "r2"]
 ]
 
+localrules: multiqc_fastqc
+
 # target rules
 # -----------------------------------------------------
 rule all:
     input:
-        FASTQC_HTML_OUTPUTS,
-        FASTQC_ZIP_OUTPUTS,
+        "reports/multiqc/fastqc.html",
+        "results/multiqc/fastqc_data.zip",
 
 rule fastqc:
     input:
@@ -47,3 +49,17 @@ rule fastqc:
         mem_mb = 1024
     wrapper:
         "v5.7.0/bio/fastqc"
+
+rule multiqc_fastqc:
+    input:
+        FASTQC_HTML_OUTPUTS,
+        FASTQC_ZIP_OUTPUTS,
+    output:
+        "reports/multiqc/fastqc.html",
+        "results/multiqc/fastqc_data.zip",
+    params:
+        extra="--verbose",  # Optional: extra parameters for multiqc.
+    log:
+        "logs/multiqc.log",
+    wrapper:
+        "v8.1.1/bio/multiqc"

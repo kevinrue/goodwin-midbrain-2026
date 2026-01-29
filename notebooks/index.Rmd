@@ -14,3 +14,7 @@ output: html_document
 ## Round 3
 
 [Quality control reports](./round3/qc/)
+
+## DNA-seq
+
+[MultiQC report for FastQC](./dna-seq/multiqc/fastqc.html)
