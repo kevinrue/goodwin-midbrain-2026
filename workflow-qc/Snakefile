@@ -92,7 +92,7 @@ rule filter_barcodes:
     threads: 1
     resources:
         mem_mb="8G",
-        runtime="5m",
+        runtime="15m",
     script:
         "scripts/filter_barcodes.R"
 
