@@ -1,0 +1,51 @@
+import os
+import numpy as np
+import pandas as pd
+
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# read sample sheet
+samples = (
+    pd.read_csv(config["samplesheet"], sep="\t", dtype={"sample": str})
+    .set_index("sample", drop=False)
+    .sort_index()
+)
+
+FASTQC_HTML_OUTPUTS = [
+    os.path.join("results/qc/fastqc", f"{row.sample}.L{row.lane}.{read}.html")
+    for row in samples.itertuples(index=False)
+    for read in ["r1", "r2"]
+]
+
+FASTQC_ZIP_OUTPUTS = [
+    os.path.join("results/qc/fastqc", f"{row.sample}.L{row.lane}.{read}_fastqc.zip")
+    for row in samples.itertuples(index=False)
+    for read in ["r1", "r2"]
+]
+
+print(FASTQC_HTML_OUTPUTS)
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        FASTQC_HTML_OUTPUTS,
+        FASTQC_ZIP_OUTPUTS,
+
+rule fastqc:
+    input:
+        lookup(query="sample == '{sample}' & lane == {lane}", within=samples, cols="{read}")
+    output:
+        html="results/qc/fastqc/{sample}.L{lane}.{read}.html",
+        zip="results/qc/fastqc/{sample}.L{lane}.{read}_fastqc.zip", # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
+    params:
+        extra = "--quiet"
+    log:
+        "logs/fastqc/{sample}.{lane}.{read}.log"
+    threads: 1
+    resources:
+        mem_mb = 1024
+    wrapper:
+        "v5.7.0/bio/fastqc"
