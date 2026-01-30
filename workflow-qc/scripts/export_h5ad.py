@@ -1,6 +1,12 @@
 import os
+import anndata as ad
 import pandas as pd
 import scanpy as sc
+
+ad.settings.allow_write_nullable_strings=True
+# ad.settings.override(
+#     allow_write_nullable_strings=True
+# )
 
 # Get input/output from Snakemake
 input_cellranger_h5 = snakemake.input.cellranger_h5
@@ -17,12 +23,12 @@ barcodes = pd.read_csv(
     names=['barcode']
 )['barcode'].to_list()
 
-adata = adata[barcodes].copy()
+adata_filtered = adata[barcodes].copy()
 
 # Add metadata
 sample_id = snakemake.wildcards.sample
-adata.obs['Sample'] = sample_id
-adata.obs['Barcode'] = adata.obs.index.to_list()
+adata_filtered.obs['Sample'] = sample_id
+adata_filtered.obs['Barcode'] = adata_filtered.obs.index.to_list()
 
 # Write output
-adata.write(output_h5ad)
+adata_filtered.write(output_h5ad)

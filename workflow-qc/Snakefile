@@ -111,7 +111,7 @@ rule export_h5ad:
         mem_mb="8G",
         runtime="15m",
     script:
-        "scripts/filter_barcodes.R" 
+        "scripts/export_h5ad.py" 
 
 rule barcodeRanks:
     input:
