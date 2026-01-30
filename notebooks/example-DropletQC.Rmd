@@ -1,0 +1,88 @@
+---
+title: "DropletQC"
+output: html_document
+---
+
+```{r, message=FALSE}
+library(dplyr)
+library(readr)
+library(scales)
+```
+
+```{r constants, include=FALSE}
+umi_breaks <- 10^(-1:10)
+umi_minor_breaks <- rep(c(1, 2, 5), 12) * (10^rep(-1:10, each = 3))
+barcode_breaks <- 10^(-1:10)
+barcode_minor_breaks <- 10^rep(-1:10)
+scale_colour_cell_empty <- c(
+  cell = "#0fbdb4",
+  empty = "#e35f4b"
+)
+```
+
+```{r snakemake}
+sample_id <- "WPPp120hrs_rep2"
+nf_min <- 0.03
+```
+
+```{r}
+dropletqc_file <- str_glue(
+  "../round1/dropletqc/results/dropletqc/{sample_id}.tsv.gz",
+  sample_id = sample_id
+  )
+dropletqc_data <- read_tsv(
+  file = dropletqc_file,
+  show_col_types = FALSE
+)
+dropletqc_data
+```
+
+```{r}
+stats_file <- str_glue(
+  "../round1/qc/results/umi_stats/{sample_id}.tsv.gz",
+  sample_id = sample_id
+  )
+umi_stats <- read_tsv(
+  file = stats_file,
+  show_col_types = FALSE
+)
+umi_stats
+```
+
+```{r}
+combined_data <- left_join(x = dropletqc_data, y = umi_stats, by = join_by(Sample, Barcode))
+combined_data
+```
+
+```{r}
+ggplot(combined_data, aes(nuclear_fraction, umi_sum)) +
+  geom_point(size = 0.1) +
+  geom_vline(
+    xintercept = nf_min,
+    linetype = "dashed",
+    linewidth = 0.5,
+    colour = "red"
+    ) +
+  scale_x_continuous(
+    breaks = seq(0, 1, 0.1),
+    labels = label_percent(),
+    limits = c(0, 1)
+  ) +
+  scale_y_log10(
+    breaks = barcode_breaks,
+    minor_breaks = umi_minor_breaks,
+    labels = label_number(scale_cut = scales::cut_short_scale())
+  ) +
+  coord_cartesian(xlim = c(0, 0.5)) +
+  labs(
+    title = "round 1 (20240925_run_2)",
+    subtitle = str_glue(
+      "{sample_id} - {cells} cells - Nuclear fraction threshold: {nf}%",
+      sample_id = sample_id,
+      cells = sum(umi_stats$cellranger_filtered),
+      nf = percent(nf_min)
+    )
+  ) +
+  theme_bw()
+```
+

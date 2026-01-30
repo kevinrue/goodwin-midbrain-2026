@@ -20,7 +20,7 @@ rule all:
     input:
         "reports/index.html",
         "reports/umi_stats_all.html",
-        expand("results/filter_barcodes/{sample}.tsv.gz", sample=samples.index),
+        expand("results/export_h5ad/{sample}.h5ad", sample=samples.index),
         expand("results/barcodeRanks/{sample}.yaml", sample=samples.index),
 
 rule umi_stats:
@@ -95,6 +95,23 @@ rule filter_barcodes:
         runtime="15m",
     script:
         "scripts/filter_barcodes.R"
+
+rule export_h5ad:
+    input:
+        cellranger_h5="data/{sample}/outs/per_sample_outs/{sample}/count/sample_filtered_feature_bc_matrix.h5",
+        filtered_barcodes="results/filter_barcodes/{sample}.tsv.gz",
+    output:
+        h5ad="results/export_h5ad/{sample}.h5ad",
+    conda:
+        "envs/export_h5ad.yaml"
+    log:
+        "logs/export_h5ad/{sample}.log",
+    threads: 1
+    resources:
+        mem_mb="8G",
+        runtime="15m",
+    script:
+        "scripts/filter_barcodes.R" 
 
 rule barcodeRanks:
     input:
