@@ -1,0 +1,3 @@
+bwa:
+  index:
+    fasta: /ceph/project/goodwin/albrecht/reference_genome/results/genome/genome.fa.gz

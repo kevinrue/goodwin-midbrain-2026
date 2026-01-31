@@ -1,0 +1,26 @@
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        multiext("results/genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
+
+# Build BWA index
+# -----------------------------------------------------
+# Necessary for mapping reads using BWA.
+rule bwa_index:
+    input:
+        config["bwa"]["index"]["fasta"],
+    output:
+        idx=multiext("results/genome", ".amb", ".ann", ".bwt", ".pac", ".sa"),
+    log:
+        "logs/bwa_index.log",
+    threads: 1
+    resources:
+        mem="8G",
+        runtime="5m",
+    wrapper:
+        "v9.0.0/bio/bwa/index"
