@@ -8,9 +8,8 @@ configfile: "config/config.yml"
 
 # read sample sheet
 samples = (
-    pd.read_csv(config["samplesheet"], sep="\t", dtype={"sample": str})
-    .set_index("sample", drop=False)
-    .sort_index()
+    pd.read_csv(config["samplesheet"], sep="\t", dtype={"sample": str, "lane": str})
+    .set_index(["sample", "lane"], drop=False)
 )
 
 FASTQC_HTML_OUTPUTS = [
@@ -25,6 +24,11 @@ FASTQC_ZIP_OUTPUTS = [
     for read in ["r1", "r2"]
 ]
 
+MAPPING_OUTPUTS = [
+    os.path.join("results/mapped", f"{row.sample}-{row.lane}.sorted.bam")
+    for row in samples.itertuples(index=False)
+]
+
 localrules: multiqc_fastqc
 
 # target rules
@@ -33,10 +37,11 @@ rule all:
     input:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
+        MAPPING_OUTPUTS,
 
 rule fastqc:
     input:
-        lookup(query="sample == '{sample}' & lane == {lane}", within=samples, cols="{read}")
+        lookup(query="sample == '{sample}' & lane == '{lane}'", within=samples, cols="{read}")
     output:
         html="results/qc/fastqc/{sample}.L{lane}.{read}.html",
         zip="results/qc/fastqc/{sample}.L{lane}.{read}_fastqc.zip", # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
@@ -46,7 +51,7 @@ rule fastqc:
         "logs/fastqc/{sample}.{lane}.{read}.log"
     threads: 1
     resources:
-        mem_mb = 1024
+        mem_mb=1024,
     wrapper:
         "v5.7.0/bio/fastqc"
 
@@ -63,3 +68,28 @@ rule multiqc_fastqc:
         "logs/multiqc.log",
     wrapper:
         "v8.1.1/bio/multiqc"
+
+def get_fastq(wildcards):
+    """Get fastq files of given sample-lane."""
+    fastqs = samples.loc[(wildcards.sample, wildcards.lane), ["r1", "r2"]].dropna()
+    return [fastqs.r1, fastqs.r2]
+
+rule map_reads:
+    input:
+        reads=get_fastq,
+        idx=multiext(config["bwa"]["index"], ".amb", ".ann", ".bwt", ".pac", ".sa"),
+    output:
+        temp("results/mapped/{sample}-{lane}.sorted.bam"),
+    log:
+        "logs/bwa_mem/{sample}-{lane}.log",
+    params:
+        extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
+        sorting="samtools",  # Can be 'none', 'samtools' or 'picard'.
+        sort_order="coordinate",  # Can be 'queryname' or 'coordinate'.
+        sort_extra="",  # Extra args for samtools/picard.
+    threads: 8
+    resources:
+        mem="16G",
+        runtime="1h",
+    wrapper:
+        "v9.0.0/bio/bwa/mem"

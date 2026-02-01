@@ -1,1 +1,4 @@
 samplesheet: config/samples.tsv
+
+bwa:
+  index: /ceph/project/goodwin/albrecht/bwa_index/results/genome
