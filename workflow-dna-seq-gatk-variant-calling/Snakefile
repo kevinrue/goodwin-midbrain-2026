@@ -29,6 +29,11 @@ MAPPING_OUTPUTS = [
     for row in samples.itertuples(index=False)
 ]
 
+DEDUP_OUTPUTS = [
+    os.path.join("results/dedup", f"{row.sample}-{row.lane}.bam")
+    for row in samples.itertuples(index=False)
+]
+
 localrules: multiqc_fastqc
 
 # target rules
@@ -37,7 +42,7 @@ rule all:
     input:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
-        MAPPING_OUTPUTS,
+        DEDUP_OUTPUTS,
 
 rule fastqc:
     input:
@@ -93,3 +98,20 @@ rule map_reads:
         runtime="1h",
     wrapper:
         "v9.0.0/bio/bwa/mem"
+
+rule mark_duplicates:
+    input:
+        bams="results/mapped/{sample}-{lane}.sorted.bam",
+    output:
+        bam=temp("results/dedup/{sample}-{lane}.bam"),
+        metrics="results/qc/dedup/{sample}-{lane}.metrics.txt",
+    log:
+        "logs/picard/dedup/{sample}-{lane}.log",
+    params:
+        extra="--REMOVE_DUPLICATES true",
+    threads: 8
+    resources:
+        mem="16G",
+        runtime="1h",
+    wrapper:
+        "v9.0.0/bio/picard/markduplicates"
