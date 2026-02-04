@@ -8,8 +8,8 @@ localrules: concatenate_reference_fasta, fetch_genome_gtf
 # -----------------------------------------------------
 rule all:
     input:
-        "results/genome/genome.fa.gz",
-        "results/genome/genome.gtf.gz",
+        "results/genome.fa.fai",
+        "results/genome.gtf",
 
 # fetch genome sequence from Ensembl
 # -----------------------------------------------------
@@ -24,7 +24,7 @@ def prepare_reference_genome_fasta_cmd(config):
     for source_url in config["genome"]["fastas"]:
         basename = os.path.basename(source_url)
         cmd += curl_template_cmd.format(source_url=source_url, basename=basename, tmp_dir=tmp_dir)
-    cmd += f"cat {tmp_dir}/*.fa.gz > results/genome/genome.fa.gz && "
+    cmd += f"zcat {tmp_dir}/*.fa.gz > results/genome.fa && "
     cmd += f"rm -rf {tmp_dir}"
     return cmd
 
@@ -33,7 +33,7 @@ prepare_reference_genome_fasta_cmd_str = prepare_reference_genome_fasta_cmd(conf
 
 rule concatenate_reference_fasta:
     output:
-        "results/genome/genome.fa.gz",
+        "results/genome.fa",
     log:
         "logs/concatenate_reference_fasta.log",
     threads: 1
@@ -46,7 +46,7 @@ rule concatenate_reference_fasta:
 # Decompress it and save it as a GTF file.
 rule fetch_genome_gtf:
     output:
-        "results/genome/genome.gtf.gz",
+        "results/genome.gtf",
     params:
         source_url=config["genome"]["gtf"][0],
     log:
@@ -60,6 +60,20 @@ rule fetch_genome_gtf:
         "   grep -v '^Unmapped_Scaffold' | "
         "   grep -v '^rDNA' | "
         "   grep -v '^Y_mapped_Scaffold' | "
-        "   grep -v '^211' | "
-        "   gzip > {output} &&"
+        "   grep -v '^211' > {output} && "
         " rm -rf tmp_gtf) 2> {log}"
+
+rule samtools_faidx:
+    input:
+        "results/genome.fa",
+    output:
+        "results/genome.fa.fai",
+    log:
+        "logs/samtools_faidx.log",
+    params:
+        extra="",
+    threads: 4,
+    resources:
+        mem="2G",
+    wrapper:
+        "v9.0.0/bio/samtools/faidx"
