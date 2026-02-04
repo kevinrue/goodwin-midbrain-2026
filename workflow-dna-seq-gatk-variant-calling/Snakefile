@@ -196,10 +196,12 @@ rule bcftools_filter_biallelic:
     log:
         "logs/bcftools_filter_biallelic.log",
     params:
-        extra="--include 'QUAL>=30' --exclude-types indels",
+        extra="--include 'QUAL>=30' --types snps",
     threads: 8
     resources:
         mem="16G",
         runtime="1h",
     wrapper:
         "v9.0.0/bio/bcftools/view"
+
+# TODO: exclude mitochondria and Y chromosome from the demultiplexing analysis, or switch ploidy to 1 for those chromosomes in bcftools_call.
