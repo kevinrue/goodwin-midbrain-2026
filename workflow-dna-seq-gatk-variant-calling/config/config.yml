@@ -3,5 +3,5 @@ samplesheet: config/samples.tsv
 bwa:
   index: /ceph/project/goodwin/albrecht/bwa_index/results/genome
 
-bcftools:
-  reference: /ceph/project/goodwin/albrecht/reference_genome/results/genome.fa
+genome:
+  fasta: /ceph/project/goodwin/albrecht/reference_genome/results/genome.fa
