@@ -43,6 +43,7 @@ rule all:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
         DEDUP_OUTPUTS,
+        expand("results/calls/{sample}.calls.bcf", sample=samples['sample'].unique()),
 
 rule fastqc:
     input:
@@ -115,3 +116,32 @@ rule mark_duplicates:
         runtime="1h",
     wrapper:
         "v9.0.0/bio/picard/markduplicates"
+
+rule bcftools_mpileup:
+    input:
+        alignments=expand("results/dedup/{sample}-{lane}.bam", sample="{sample}", lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")),
+        ref=config["bcftools"]["reference"],
+        index=config["bcftools"]["reference"] + ".fai",
+    output:
+        pileup="results/pileups/{sample}.pileup.bcf",
+    params:
+        uncompressed_bcf=False,
+        extra="", # e.g. --max-depth 100 --min-BQ 15
+    log:
+        "logs/bcftools_mpileup/{sample}.log",
+    wrapper:
+        "v9.0.0/bio/bcftools/mpileup"
+
+rule bcftools_call:
+    input:
+        pileup="results/pileups/{sample}.pileup.bcf",
+    output:
+        calls="results/calls/{sample}.calls.bcf",
+    params:
+        uncompressed_bcf=False,
+        caller="-m",  # valid options include -c/--consensus-caller or -m/--multiallelic-caller
+        extra="--ploidy 1 --prior 0.001",
+    log:
+        "logs/bcftools_call/{sample}.log",
+    wrapper:
+        "v9.0.0/bio/bcftools/call"
