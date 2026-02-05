@@ -1,0 +1,50 @@
+rule all:
+    input:
+        pileups=expand("results/popscle_demuxlet/{pool}", pool=["S1"]),
+
+rule popscle_dsc:
+    input:
+        bam="/ceph/project/goodwin/albrecht/round2/cellranger/results/cellranger/{pool}/outs/per_sample_outs/{pool}/count/sample_alignments.bam",
+        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+    output:
+        pileup="results/popscle_dsc/{pool}.pileup",
+    conda:
+        "envs/popscle.yml"
+    message:
+        """--- Running popscle dsc-pileup."""
+    log:
+        "logs/popscle_dsc/{pool}.log",
+    threads: 1
+    resources:
+        mem="24G",
+        runtime="6h",
+    shell:
+        "popscle dsc-pileup"
+        " --sam {input.bam}"
+        " --vcf {input.vcf}"
+        " --out {output.pileup} > {log} 2>&1 &&"
+        " touch {output.pileup}"
+
+rule popscle_demuxlet:
+    input:
+        pileup="results/popscle_dsc/{pool}.pileup",
+        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+    output:
+        pileup="results/popscle_demuxlet/{pool}",
+    conda:
+        "envs/popscle.yml"
+    message:
+        """--- Running popscle demuxlet."""
+    log:
+        "logs/popscle_demuxlet/{pool}.log",
+    threads: 1
+    resources:
+        mem="48G",
+        runtime="6h",
+    shell:
+        "popscle demuxlet"
+        " --plp {input.pileup}"
+        " --vcf {input.vcf}"
+        " --field GT"
+        " --out {output.pileup} > {log} 2>&1 &&"
+        " touch {output.pileup}"

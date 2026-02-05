@@ -15,3 +15,5 @@ sps-*
 *.html
 # md5sum
 md5sum.*
+# other
+*.bed
