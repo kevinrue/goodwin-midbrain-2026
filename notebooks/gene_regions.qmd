@@ -21,7 +21,7 @@ table(seqnames(gtf_gene_data))
 ```
 
 ```{r}
-exclude_chr <- seqnames(gtf_gene_data) %in% c("mitochondrion_genome", "Y")
+exclude_chr <- seqnames(gtf_gene_data) %in% c("X", "Y", "mitochondrion_genome")
 gtf_gene_filtered <- gtf_gene_data[!exclude_chr]
 length(gtf_gene_filtered)
 ```

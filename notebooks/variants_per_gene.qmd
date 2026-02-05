@@ -1,0 +1,63 @@
+---
+title: "variants_per_gene"
+format: html
+---
+
+```{r}
+#| message: false
+library(ggplot2)
+library(stringr)
+library(VariantAnnotation)
+```
+
+```{r}
+vcf_file <- "/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz"
+vcf_data <- readVcf(vcf_file)
+vcf_data
+```
+
+```{r}
+gtf_file <- "/ceph/project/goodwin/albrecht/reference_genome/results/genome.gtf"
+gtf_gene_data <- import(gtf_file, feature.type = "gene")
+gtf_gene_data
+```
+
+```{r}
+count_overlap <- tibble(
+  gene = gtf_gene_data$gene_name,
+  chr = as.character(seqnames(gtf_gene_data)),
+  variants = countOverlaps(gtf_gene_data, vcf_data)
+) |> 
+  arrange(desc(variants))
+write_tsv(x = count_overlap, file = "variants_per_gene.tsv")
+count_overlap
+```
+
+```{r}
+table(variants = co) |>
+  as_tibble() |> 
+  mutate(
+    variants = as.integer(variants)
+  ) |> 
+  ggplot() +
+  geom_point(aes(x = variants, y = n)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(
+    y = "genes"
+  ) +
+  theme_classic()
+```
+
+
+```{r}
+markers <- read_tsv("/ceph/project/cncb/albrecht/snakemake-cncb-first-round/config/markers_qc.tsv", show_col_types = FALSE)
+markers
+```
+
+```{r}
+count_overlap |>
+  right_join(markers, join_by(gene == gene_name)) |> 
+  write_tsv("variants_per_gene.markers.tsv")
+```
+

@@ -5,6 +5,7 @@ rule all:
 rule popscle_dsc:
     input:
         bam="/ceph/project/goodwin/albrecht/round2/cellranger/results/cellranger/{pool}/outs/per_sample_outs/{pool}/count/sample_alignments.bam",
+        barcodes="/ceph/project/goodwin/albrecht/round2/qc/results/filter_barcodes/{pool}.tsv.gz",
         vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
     output:
         pileup="results/popscle_dsc/{pool}.pileup",
@@ -17,11 +18,12 @@ rule popscle_dsc:
     threads: 1
     resources:
         mem="24G",
-        runtime="6h",
+        runtime="23h",
     shell:
         "popscle dsc-pileup"
         " --sam {input.bam}"
         " --vcf {input.vcf}"
+        " --group-list {input.barcodes}"
         " --out {output.pileup} > {log} 2>&1 &&"
         " touch {output.pileup}"
 
@@ -40,11 +42,11 @@ rule popscle_demuxlet:
     threads: 1
     resources:
         mem="48G",
-        runtime="6h",
+        runtime="23h",
     shell:
         "popscle demuxlet"
         " --plp {input.pileup}"
         " --vcf {input.vcf}"
-        " --field GT"
+        " --field PL"
         " --out {output.pileup} > {log} 2>&1 &&"
         " touch {output.pileup}"
