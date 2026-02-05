@@ -42,7 +42,7 @@ rule all:
     input:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
-        "results/merge/all.biallelic.bcf",
+        "results/merge/filtered.snps.vcf.gz.tbi",
 
 rule fastqc:
     input:
@@ -182,26 +182,40 @@ rule bcftools_merge:
         extra="",  # optional parameters for bcftools concat (except -o)
     threads: 8
     resources:
-        mem="16G",
+        mem="8G",
         runtime="1h",
     wrapper:
         "v9.0.0/bio/bcftools/merge"
 
-# rename to filter_snps
-rule bcftools_filter_biallelic:
+rule bcftools_filter:
     input:
         "results/merge/all.bcf",
     output:
-        "results/merge/all.biallelic.bcf",
+        "results/merge/filtered.snps.vcf.gz",
     log:
-        "logs/bcftools_filter_biallelic.log",
+        "logs/bcftools_filter.log",
     params:
         extra="-m2 -M2 --include 'QUAL>=30 && FMT/GT=\"het\"' --types snps -t '^mitochondrion_genome,Y'",
     threads: 8
     resources:
-        mem="16G",
-        runtime="1h",
+        mem="8G",
+        runtime="5m",
     wrapper:
         "v9.0.0/bio/bcftools/view"
 
-# TODO: exclude mitochondria and Y chromosome from the demultiplexing analysis, or switch ploidy to 1 for those chromosomes in bcftools_call.
+rule tabix:
+    input:
+        "results/merge/filtered.snps.vcf.gz",
+    output:
+        "results/merge/filtered.snps.vcf.gz.tbi",
+    log:
+        "logs/tabix.log",
+    params:
+        # pass arguments to tabix (e.g. index a vcf)
+        "-p vcf",
+    threads: 1
+    resources:
+        mem="8G",
+        runtime="5m",
+    wrapper:
+        "v9.0.0/bio/tabix/index"
