@@ -6,6 +6,7 @@ format: html
 ```{r}
 #| message: false
 library(BiocIO)
+library(readr)
 library(rtracklayer)
 ```
 
@@ -21,16 +22,21 @@ table(seqnames(gtf_gene_data))
 
 ```{r}
 exclude_chr <- seqnames(gtf_gene_data) %in% c("mitochondrion_genome", "Y")
-gtf_filtered <- gtf_gene_data[!exclude_chr]
-length(gtf_filtered)
+gtf_gene_filtered <- gtf_gene_data[!exclude_chr]
+length(gtf_gene_filtered)
 ```
 
 
 ```{r}
-
-
-tibble(
-  CHR = seqnames(gtf_gene_data)
+gene_regions_bed <- tibble(
+  chr = as.character(seqnames(gtf_gene_filtered)),
+  start = start(gtf_gene_filtered),
+  end = end(gtf_gene_filtered)
 )
+gene_regions_bed
+```
+
+```{r}
+write_tsv(x = gene_regions_bed, file = "gene_regions.bed", col_names = FALSE)
 ```
 
