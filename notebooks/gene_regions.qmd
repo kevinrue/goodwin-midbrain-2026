@@ -1,0 +1,36 @@
+---
+title: "gene_regions"
+format: html
+---
+
+```{r}
+#| message: false
+library(BiocIO)
+library(rtracklayer)
+```
+
+```{r}
+gtf_file <- "/ceph/project/goodwin/albrecht/reference_genome/results/genome.gtf"
+gtf_gene_data <- import(gtf_file, feature.type = "gene")
+length(gtf_gene_data)
+```
+
+```{r}
+table(seqnames(gtf_gene_data))
+```
+
+```{r}
+exclude_chr <- seqnames(gtf_gene_data) %in% c("mitochondrion_genome", "Y")
+gtf_filtered <- gtf_gene_data[!exclude_chr]
+length(gtf_filtered)
+```
+
+
+```{r}
+
+
+tibble(
+  CHR = seqnames(gtf_gene_data)
+)
+```
+

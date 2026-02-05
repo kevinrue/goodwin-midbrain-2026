@@ -5,3 +5,6 @@ bwa:
 
 genome:
   fasta: /ceph/project/goodwin/albrecht/reference_genome/results/genome.fa
+
+bcftools:
+  targets: /ceph/project/goodwin/albrecht/notebooks/gene_regions.bed

@@ -190,12 +190,13 @@ rule bcftools_merge:
 rule bcftools_filter:
     input:
         "results/merge/all.bcf",
+        targets=config["bcftools"]["targets"],
     output:
         "results/merge/filtered.snps.vcf.gz",
     log:
         "logs/bcftools_filter.log",
     params:
-        extra="-m2 -M2 --include 'QUAL>=30 && FMT/GT=\"het\"' --types snps -t '^mitochondrion_genome,Y'",
+        extra="-m2 -M2 --include 'QUAL>=30 && FMT/GT=\"het\"' --types snps",
     threads: 8
     resources:
         mem="8G",
