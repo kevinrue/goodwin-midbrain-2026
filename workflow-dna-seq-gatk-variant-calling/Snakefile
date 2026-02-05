@@ -196,7 +196,7 @@ rule bcftools_filter_biallelic:
     log:
         "logs/bcftools_filter_biallelic.log",
     params:
-        extra="--include 'QUAL>=30' --types snps",
+        extra="-m2 -M2 --include 'QUAL>=30 && FMT/GT=\"het\"' --types snps -t '^mitochondrion_genome,Y'",
     threads: 8
     resources:
         mem="16G",
