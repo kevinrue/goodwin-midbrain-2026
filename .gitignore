@@ -18,3 +18,4 @@ md5sum.*
 # other
 *.bed
 notebooks/*.tsv
+test-*/

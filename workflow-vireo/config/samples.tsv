@@ -1,0 +1,2 @@
+pool	bam	barcodes
+S1	/ceph/project/goodwin/albrecht/round2/cellranger/results/cellranger/S1/outs/per_sample_outs/S1/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round2/qc/results/filter_barcodes/S1.tsv.gz

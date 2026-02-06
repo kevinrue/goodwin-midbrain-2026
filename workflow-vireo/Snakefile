@@ -1,0 +1,68 @@
+import os
+import pandas as pd
+
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# read sample sheet
+samples = (
+    pd.read_csv(config["samplesheet"], sep="\t", dtype={"pool": str})
+    .set_index("pool", drop=False)
+    .sort_index()
+)
+
+rule all:
+    input:
+        expand("results/vireo/{pool}", pool=samples["pool"].tolist())
+
+rule cellsnp_lite:
+    input:
+        bam=lookup(query="pool == '{pool}'", within=samples, cols="bam"),
+        barcodes=lookup(query="pool == '{pool}'", within=samples, cols="barcodes"),
+        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+    output:
+        dir=directory("results/cellsnp_lite/{pool}"),
+    params:
+        max_depth=lookup(within=config, dpath="cellsnp_lite/max_depth")
+    log:
+        "logs/cellsnp_lite/{pool}.log",
+    conda:
+        "envs/vireo.yml",
+    threads: 16
+    resources:
+        mem="64G",
+        runtime="23h",
+    shell:
+        "cellsnp-lite "
+        " -s {input.bam} "
+        " -b {input.barcodes} "
+        " -R {input.vcf} "
+        " -O {output.dir} "
+        " --maxDEPTH {params.max_depth}"
+        " -p {threads} "
+        " --minMAF 0.1 "
+        " --minCOUNT 20 "
+        " --gzip "
+        " 2> {log} "
+
+rule vireo:
+    input:
+        cellsnp="results/cellsnp_lite/{pool}",
+        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+    output:
+        dir=directory("results/vireo/{pool}"),
+    log:
+        "results/vireo/{pool}.log",
+    conda:
+        "envs/vireo.yml",
+    threads: 16
+    resources:
+        mem="32G",
+        runtime="12h",
+    shell:
+        "vireo "
+        " -c {input.cellsnp}"
+        " -d {input.vcf}"
+        " -o {output.dir}"
+        " 2> {log} "
