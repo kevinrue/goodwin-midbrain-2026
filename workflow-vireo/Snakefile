@@ -32,7 +32,7 @@ rule cellsnp_lite:
     threads: 16
     resources:
         mem="64G",
-        runtime="23h",
+        runtime="12h",
     shell:
         "cellsnp-lite "
         " -s {input.bam} "
@@ -58,7 +58,7 @@ rule vireo:
         "envs/vireo.yml",
     threads: 16
     resources:
-        mem="32G",
+        mem="64G",
         runtime="12h",
     shell:
         "vireo "

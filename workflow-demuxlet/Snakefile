@@ -1,20 +1,96 @@
+import os
+import pandas as pd
+
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# read sample sheet
+samples = (
+    pd.read_csv(config["samplesheet"], sep="\t", dtype={"pool": str})
+    .set_index("pool", drop=False)
+    .sort_index()
+)
+
+# for each file in samples['barcodes'], compute the number of lines and determine how many chunks are needed based on config['chunk_size']
+# store the number of chunks needed for each file in a new column in the samples dataframe
+chunks = {}
+for pool, barcodes in samples['barcodes'].items():
+    with pd.read_csv(barcodes, sep="\t", header=None, compression="gzip") as f:
+        n_lines = sum(1 for line in f)
+    chunks[pool] = (n_lines // config['chunk_size']) + 1
+samples['chunks'] = samples['pool'].map(chunks)
+print(samples)
+
+sys.exit(0)
+# from pathlib import Path
+# if Path(barcodes_in).exists():
+#     print("File exists")
+# else:
+#     print("File does not exist")
+
+df = pd.read_csv(
+    barcodes_in,
+    sep="\t",
+    header=None,      # no header
+    compression="gzip"
+)
+
+import math
+
+rows_per_file = 1000
+n_files = math.ceil(len(df) / rows_per_file)
+
+for i in range(n_files):
+	start = i * rows_per_file
+	end = start + rows_per_file
+	chunk = df.iloc[start:end]
+
+	filename = f"output_{i+1:04d}.tsv.gz"
+	chunk.to_csv(
+		filename,
+		sep="\t",
+		index=False,
+		header=False,
+		compression="gzip"
+	)
+
+localrules: barcode_chunks
+
 rule all:
     input:
-        pileups=expand("results/popscle_demuxlet/{pool}", pool=["S1"]),
+        pileups=expand("results/barcodes_chunks/popscle_dsc/{pool}_{chunk}.tsv.gz", pool=["S1"], chunk=range(1, chunks+1)),
+
+rule barcode_chunks:
+    input:
+        "/ceph/project/goodwin/albrecht/round2/qc/results/filter_barcodes/{pool}.tsv.gz",
+    output:
+        chunks=["barcode_chunks/some_prefix_{{pool}}_{:01d}.tsv.gz".format(x+1) for x in range(chunks)],
+    params: chunks=chunks
+    shell:
+        "zcat {input[0]} > tmp.barcodes &&"
+        " split "
+        " -n {params.chunks} "
+        " --numeric-suffixes=1 "
+        " --additional-suffix=.tsv "
+        " tmp.barcodes "
+        " barcode_chunks/some_prefix_ &&"
+        " gzip barcode_chunks/*.tsv "
+
 
 rule popscle_dsc:
     input:
         bam="/ceph/project/goodwin/albrecht/round2/cellranger/results/cellranger/{pool}/outs/per_sample_outs/{pool}/count/sample_alignments.bam",
-        barcodes="/ceph/project/goodwin/albrecht/round2/qc/results/filter_barcodes/{pool}.tsv.gz",
+        barcodes="barcode_chunks/some_prefix_{pool}_{chunk}.tsv.gz",
         vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
     output:
-        pileup="results/popscle_dsc/{pool}.pileup",
+        pileup="results/popscle_dsc/{pool}_{chunk}.pileup",
     conda:
         "envs/popscle.yml"
     message:
         """--- Running popscle dsc-pileup."""
     log:
-        "logs/popscle_dsc/{pool}.log",
+        "logs/popscle_dsc/{pool}_{chunk}.log",
     threads: 1
     resources:
         mem="24G",
@@ -27,26 +103,26 @@ rule popscle_dsc:
         " --out {output.pileup} > {log} 2>&1 &&"
         " touch {output.pileup}"
 
-rule popscle_demuxlet:
-    input:
-        pileup="results/popscle_dsc/{pool}.pileup",
-        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
-    output:
-        pileup="results/popscle_demuxlet/{pool}",
-    conda:
-        "envs/popscle.yml"
-    message:
-        """--- Running popscle demuxlet."""
-    log:
-        "logs/popscle_demuxlet/{pool}.log",
-    threads: 1
-    resources:
-        mem="48G",
-        runtime="23h",
-    shell:
-        "popscle demuxlet"
-        " --plp {input.pileup}"
-        " --vcf {input.vcf}"
-        " --field PL"
-        " --out {output.pileup} > {log} 2>&1 &&"
-        " touch {output.pileup}"
+# rule popscle_demuxlet:
+#     input:
+#         pileup="results/popscle_dsc/{pool}.pileup",
+#         vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+#     output:
+#         pileup="results/popscle_demuxlet/{pool}",
+#     conda:
+#         "envs/popscle.yml"
+#     message:
+#         """--- Running popscle demuxlet."""
+#     log:
+#         "logs/popscle_demuxlet/{pool}.log",
+#     threads: 1
+#     resources:
+#         mem="48G",
+#         runtime="23h",
+#     shell:
+#         "popscle demuxlet"
+#         " --plp {input.pileup}"
+#         " --vcf {input.vcf}"
+#         " --field PL"
+#         " --out {output.pileup} > {log} 2>&1 &&"
+#         " touch {output.pileup}"
