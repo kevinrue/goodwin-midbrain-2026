@@ -158,26 +158,31 @@ rule bcftools_call:
     wrapper:
         "v9.0.0/bio/bcftools/call"
 
-# rule samtools_index:
-#     input:
-#         "results/dedup/{sample}-{lane}.bam",
-#     output:
-#         "results/samtools_sort/{sample}-{lane}.bam.bai",
-#     log:
-#         "logs/samtools_index/{sample}-{lane}.log",
-#     params:
-#         extra="",  # optional parameters for samtools index
-#     threads: 8
-#     resources:
-#         mem="8G",
-#         runtime="30m",
-#     wrapper:
-#         "v9.0.0/bio/samtools/index"
+rule samtools_index:
+    input:
+        "results/dedup/{sample}-{lane}.bam",
+    output:
+        "results/dedup/{sample}-{lane}.bam.bai",
+    log:
+        "logs/samtools_index/{sample}-{lane}.log",
+    params:
+        extra="",  # optional parameters for samtools index
+    threads: 8
+    resources:
+        mem="8G",
+        runtime="30m",
+    wrapper:
+        "v9.0.0/bio/samtools/index"
 
 rule haplotype_caller:
     input:
         bam=expand(
             "results/dedup/{sample}-{lane}.bam",
+            sample="{sample}",
+            lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
+            ),
+        bai=expand(
+            "results/dedup/{sample}-{lane}.bam.bai",
             sample="{sample}",
             lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
             ),
@@ -189,12 +194,13 @@ rule haplotype_caller:
         java_opts="",  # optional
     log:
         "logs/haplotype_caller/{sample}.log",
-    threads: 8
+    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
     resources:
         mem="16G",
         runtime="4h",
     wrapper:
-        "v9.0.0/bio/gatk/haplotypecaller"
+        "file:///ceph/project/goodwin/albrecht/snakemake-wrappers/bio/gatk/haplotypecaller"
+        # "v9.0.0/bio/gatk/haplotypecaller"
 
 rule bcftools_index:
     input:
