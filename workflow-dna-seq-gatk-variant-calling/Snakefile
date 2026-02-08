@@ -43,7 +43,7 @@ rule all:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
         "results/merge/filtered.snps.vcf.gz.tbi",
-        "results/haplotype_caller_merge/all.g.vcf",
+        "results/genotype_gvcfs/all.vcf.gz",
 
 rule fastqc:
     input:
@@ -277,7 +277,7 @@ rule haplotype_caller_merge:
         ),
         ref=config["genome"]["fasta"],
     output:
-        gvcf="results/haplotype_caller_merge/all.g.vcf",
+        gvcf="results/haplotype_caller_merge/all.g.vcf.gz",
     log:
         "logs/haplotype_caller_merge.log",
     params:
@@ -286,6 +286,26 @@ rule haplotype_caller_merge:
     threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
     resources:
         mem="8G",
-        runtime="4h",
+        runtime="2h",
     wrapper:
         "v9.0.0/bio/gatk/combinegvcfs"
+
+rule genotype_gvcfs:
+    input:
+        gvcf="results/haplotype_caller_merge/all.g.vcf.gz",  # combined gvcf over multiple samples
+    # N.B. gvcf or genomicsdb must be specified
+    # in the latter case, this is a GenomicsDB data store
+        ref=config["genome"]["fasta"],
+    output:
+        vcf="results/genotype_gvcfs/all.vcf.gz",
+    log:
+        "logs/gatk/genotypegvcfs.log",
+    params:
+        extra="",  # optional --sample-ploidy 2
+        java_opts="", # optional
+    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
+    resources:
+        mem="8G",
+        runtime="4h",
+    wrapper:
+        "v9.0.0/bio/gatk/genotypegvcfs"
