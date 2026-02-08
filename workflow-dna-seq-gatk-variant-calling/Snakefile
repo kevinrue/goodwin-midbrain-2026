@@ -43,7 +43,7 @@ rule all:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
         "results/merge/filtered.snps.vcf.gz.tbi",
-        "results/genotype_gvcfs/all.vcf.gz",
+        "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
 
 rule fastqc:
     input:
@@ -309,3 +309,37 @@ rule genotype_gvcfs:
         runtime="4h",
     wrapper:
         "v9.0.0/bio/gatk/genotypegvcfs"
+
+rule genotype_gvcfs_filter:
+    input:
+        "results/genotype_gvcfs/all.vcf.gz",
+        targets=config["bcftools"]["targets"],
+    output:
+        "results/genotype_gvcfs/filtered.snps.vcf.gz",
+    log:
+        "logs/genotype_gvcfs_filter.log",
+    params:
+        extra="-m2 -M2 --include 'QUAL>=30 && FMT/GT=\"het\"' --types snps",
+    threads: 8
+    resources:
+        mem="8G",
+        runtime="5m",
+    wrapper:
+        "v9.0.0/bio/bcftools/view"
+
+rule genotype_gvcfs_tabix:
+    input:
+        "results/genotype_gvcfs/filtered.snps.vcf.gz",
+    output:
+        "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
+    log:
+        "logs/genotype_gvcfs_tabix.log",
+    params:
+        # pass arguments to tabix (e.g. index a vcf)
+        "-p vcf",
+    threads: 1
+    resources:
+        mem="8G",
+        runtime="5m",
+    wrapper:
+        "v9.0.0/bio/tabix/index"
