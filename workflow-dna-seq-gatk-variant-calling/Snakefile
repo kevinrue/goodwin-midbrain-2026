@@ -104,7 +104,7 @@ rule mark_duplicates:
     input:
         bams="results/mapped/{sample}-{lane}.sorted.bam",
     output:
-        bam=temp("results/dedup/{sample}-{lane}.bam"),
+        bam=protected("results/dedup/{sample}-{lane}.bam"),
         metrics="results/qc/dedup/{sample}-{lane}.metrics.txt",
     log:
         "logs/picard/dedup/{sample}-{lane}.log",
@@ -230,7 +230,7 @@ rule samtools_index:
     input:
         "results/dedup/{sample}-{lane}.bam",
     output:
-        "results/dedup/{sample}-{lane}.bam.bai",
+        protected("results/dedup/{sample}-{lane}.bam.bai"),
     log:
         "logs/samtools_index/{sample}-{lane}.log",
     params:

@@ -1,4 +1,0 @@
-samplesheet: "config/samples.tsv"
-
-cellsnp_lite:
-  max_depth: 0
