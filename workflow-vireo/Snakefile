@@ -20,7 +20,7 @@ rule cellsnp_lite:
     input:
         bam=lookup(query="pool == '{pool}'", within=samples, cols="bam"),
         barcodes=lookup(query="pool == '{pool}'", within=samples, cols="barcodes"),
-        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+        vcf=config["cellsnp_lite"]["vcf"],
     output:
         dir=directory("results/cellsnp_lite/{pool}"),
     params:
@@ -49,7 +49,7 @@ rule cellsnp_lite:
 rule vireo:
     input:
         cellsnp="results/cellsnp_lite/{pool}",
-        vcf="/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/merge/filtered.snps.vcf.gz",
+        vcf=config["cellsnp_lite"]["vcf"],
     output:
         dir=directory("results/vireo/{pool}"),
     log:
