@@ -43,7 +43,7 @@ rule all:
         "reports/multiqc/fastqc.html",
         "results/multiqc/fastqc_data.zip",
         "results/merge/filtered.snps.vcf.gz.tbi",
-        expand("results/haplotype_caller/{sample}.g.vcf.gz", sample=samples['sample'].unique()),
+        "results/haplotype_caller_merge/all.g.vcf",
 
 rule fastqc:
     input:
@@ -158,50 +158,6 @@ rule bcftools_call:
     wrapper:
         "v9.0.0/bio/bcftools/call"
 
-rule samtools_index:
-    input:
-        "results/dedup/{sample}-{lane}.bam",
-    output:
-        "results/dedup/{sample}-{lane}.bam.bai",
-    log:
-        "logs/samtools_index/{sample}-{lane}.log",
-    params:
-        extra="",  # optional parameters for samtools index
-    threads: 8
-    resources:
-        mem="8G",
-        runtime="30m",
-    wrapper:
-        "v9.0.0/bio/samtools/index"
-
-rule haplotype_caller:
-    input:
-        bam=expand(
-            "results/dedup/{sample}-{lane}.bam",
-            sample="{sample}",
-            lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
-            ),
-        bai=expand(
-            "results/dedup/{sample}-{lane}.bam.bai",
-            sample="{sample}",
-            lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
-            ),
-        ref=config["genome"]["fasta"],
-    output:
-        gvcf="results/haplotype_caller/{sample}.g.vcf.gz",
-    params:
-        extra="",  # optional
-        java_opts="",  # optional
-    log:
-        "logs/haplotype_caller/{sample}.log",
-    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
-    resources:
-        mem="16G",
-        runtime="4h",
-    wrapper:
-        "file:///ceph/project/goodwin/albrecht/snakemake-wrappers/bio/gatk/haplotypecaller"
-        # "v9.0.0/bio/gatk/haplotypecaller"
-
 rule bcftools_index:
     input:
         "results/calls/{sample}.bcf",
@@ -269,3 +225,67 @@ rule tabix:
         runtime="5m",
     wrapper:
         "v9.0.0/bio/tabix/index"
+
+rule samtools_index:
+    input:
+        "results/dedup/{sample}-{lane}.bam",
+    output:
+        "results/dedup/{sample}-{lane}.bam.bai",
+    log:
+        "logs/samtools_index/{sample}-{lane}.log",
+    params:
+        extra="",  # optional parameters for samtools index
+    threads: 8
+    resources:
+        mem="8G",
+        runtime="30m",
+    wrapper:
+        "v9.0.0/bio/samtools/index"
+
+rule haplotype_caller:
+    input:
+        bam=expand(
+            "results/dedup/{sample}-{lane}.bam",
+            sample="{sample}",
+            lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
+            ),
+        bai=expand(
+            "results/dedup/{sample}-{lane}.bam.bai",
+            sample="{sample}",
+            lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
+            ),
+        ref=config["genome"]["fasta"],
+    output:
+        gvcf="results/haplotype_caller/{sample}.g.vcf.gz",
+    params:
+        extra="",  # optional
+        java_opts="",  # optional
+    log:
+        "logs/haplotype_caller/{sample}.log",
+    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
+    resources:
+        mem="8G",
+        runtime="4h",
+    wrapper:
+        "file:///ceph/project/goodwin/albrecht/snakemake-wrappers/bio/gatk/haplotypecaller" # "v9.0.0/bio/gatk/haplotypecaller"
+
+rule haplotype_caller_merge:
+    input:
+        gvcfs=expand(
+            "results/haplotype_caller/{sample}.g.vcf.gz",
+            sample=samples['sample'].unique()
+        ),
+        ref=config["genome"]["fasta"],
+    output:
+        gvcf="results/haplotype_caller_merge/all.g.vcf",
+    log:
+        "logs/haplotype_caller_merge.log",
+    params:
+        extra="",  # optional
+        java_opts="",  # optional
+    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
+    resources:
+        mem="8G",
+        runtime="4h",
+    wrapper:
+        "v9.0.0/bio/gatk/combinegvcfs"
