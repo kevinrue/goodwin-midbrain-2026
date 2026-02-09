@@ -1,0 +1,94 @@
+---
+title: "compare_vireo_runs"
+format: html
+---
+
+```{r}
+#| message: false
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyr)
+```
+
+```{r}
+data_august_2025 <- read_tsv("/ceph/project/cncb/albrecht/snakemake-cncb-genetic-demultiplexing/results/vireo/WPP000_018hrs_rep2/donor_ids.tsv", show_col_types = FALSE)
+data_august_2025
+```
+
+
+```{r}
+data_feb_26_gatk <- read_tsv("/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo/S2/donor_ids.tsv", show_col_types = FALSE)
+data_feb_26_gatk
+```
+
+```{r}
+# the feb26 barcodes should be a subset of aug25
+table(data_feb_26_gatk$cell %in% data_august_2025$cell)
+```
+
+```{r}
+total_assigned_by_donor_aug25 <- data_august_2025 |> 
+  filter(!donor_id %in% c("unassigned", "doublet")) |> 
+  summarise(
+    n = n(), .by = donor_id
+  ) |> 
+  arrange(desc(n)) |> 
+  mutate(donor_id = factor(donor_id, donor_id))
+total_assigned_by_donor_aug25
+```
+
+```{r}
+total_assigned_by_donor_feb26 <- data_feb_26_gatk |> 
+  filter(!donor_id %in% c("unassigned", "doublet")) |> 
+  summarise(
+    n = n(), .by = donor_id
+  ) |> 
+  arrange(desc(n)) |> 
+  mutate(donor_id = factor(donor_id, donor_id))
+total_assigned_by_donor_feb26
+```
+
+```{r}
+total_assigned_by_donor <- 
+  bind_rows(
+    total_assigned_by_donor_aug25 |> 
+      mutate(run = "August 2025"),
+    total_assigned_by_donor_feb26 |> 
+      mutate(run = "February 2026")
+  )
+total_assigned_by_donor
+```
+
+```{r}
+total_assigned_by_donor |> 
+  ggplot(aes(x = donor_id, y = n, colour = run)) +
+  geom_line(aes(group = run)) +
+  geom_point() +
+  coord_cartesian(ylim = c(0, NA)) +
+  theme_bw()
+```
+
+```{r}
+library(SingleCellExperiment)
+sce <- read10xCounts("/ceph/project/goodwin/albrecht/round2/cellranger/results/cellranger/S2/outs/per_sample_outs/S2/count/sample_filtered_feature_bc_matrix", col.names = TRUE)
+sce
+```
+
+```{r}
+sce$donor_id <- data_feb_26_gatk$donor_id[match(sce$Barcode, data_feb_26_gatk$cell)]
+sce <- sce[, !is.na(sce$donor_id) & !sce$donor_id %in% c("doublet", "unassigned")]
+sce
+```
+
+```{r}
+tibble(
+  rox2 = counts(sce)[rowData(sce)[["Symbol"]] == "lncRNA:roX2"],
+  donor_id = sce$donor_id
+) |> 
+  ggplot(aes(x = donor_id, y = rox2, fill = donor_id)) +
+  geom_violin(scale = "width") +
+  scale_y_log10() +
+  theme_bw()
+```
+
