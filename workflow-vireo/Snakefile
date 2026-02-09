@@ -32,7 +32,7 @@ rule cellsnp_lite:
     threads: 16
     resources:
         mem="64G",
-        runtime="12h",
+        runtime="4h",
     shell:
         "cellsnp-lite "
         " -s {input.bam} "

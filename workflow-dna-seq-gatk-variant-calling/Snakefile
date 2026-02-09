@@ -98,7 +98,7 @@ rule map_reads:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.0/bio/bwa/mem"
+        "v9.0.1/bio/bwa/mem"
 
 rule mark_duplicates:
     input:
@@ -115,7 +115,7 @@ rule mark_duplicates:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.0/bio/picard/markduplicates"
+        "v9.0.1/bio/picard/markduplicates"
 
 rule bcftools_mpileup:
     input:
@@ -138,7 +138,7 @@ rule bcftools_mpileup:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.0/bio/bcftools/mpileup"
+        "v9.0.1/bio/bcftools/mpileup"
 
 rule bcftools_call:
     input:
@@ -156,7 +156,7 @@ rule bcftools_call:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.0/bio/bcftools/call"
+        "v9.0.1/bio/bcftools/call"
 
 rule bcftools_index:
     input:
@@ -172,7 +172,7 @@ rule bcftools_index:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.0/bio/bcftools/index"
+        "v9.0.1/bio/bcftools/index"
 
 rule bcftools_merge:
     input:
@@ -190,7 +190,7 @@ rule bcftools_merge:
         mem="8G",
         runtime="1h",
     wrapper:
-        "v9.0.0/bio/bcftools/merge"
+        "v9.0.1/bio/bcftools/merge"
 
 rule bcftools_filter:
     input:
@@ -207,7 +207,7 @@ rule bcftools_filter:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.0/bio/bcftools/view"
+        "v9.0.1/bio/bcftools/view"
 
 rule tabix:
     input:
@@ -224,7 +224,7 @@ rule tabix:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.0/bio/tabix/index"
+        "v9.0.1/bio/tabix/index"
 
 rule samtools_index:
     input:
@@ -240,7 +240,7 @@ rule samtools_index:
         mem="8G",
         runtime="30m",
     wrapper:
-        "v9.0.0/bio/samtools/index"
+        "v9.0.1/bio/samtools/index"
 
 rule haplotype_caller:
     input:
@@ -267,7 +267,7 @@ rule haplotype_caller:
         mem="8G",
         runtime="4h",
     wrapper:
-        "file:///ceph/project/goodwin/albrecht/snakemake-wrappers/bio/gatk/haplotypecaller" # "v9.0.0/bio/gatk/haplotypecaller"
+        "v9.0.1/bio/gatk/haplotypecaller"
 
 rule haplotype_caller_merge:
     input:
@@ -283,12 +283,12 @@ rule haplotype_caller_merge:
     params:
         extra="",  # optional
         java_opts="",  # optional
-    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
+    threads: 8
     resources:
         mem="8G",
         runtime="2h",
     wrapper:
-        "v9.0.0/bio/gatk/combinegvcfs"
+        "v9.0.1/bio/gatk/combinegvcfs" # https://github.com/snakemake/snakemake-wrappers/issues/4937
 
 rule genotype_gvcfs:
     input:
@@ -301,14 +301,14 @@ rule genotype_gvcfs:
     log:
         "logs/gatk/genotypegvcfs.log",
     params:
-        extra="",  # optional --sample-ploidy 2
+        extra="",  # optional --sample-ploidy 2 (default)
         java_opts="", # optional
-    threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
+    threads: 1 # not multi-threaded according to GATK documentation
     resources:
         mem="8G",
         runtime="4h",
     wrapper:
-        "v9.0.0/bio/gatk/genotypegvcfs"
+        "v9.0.1/bio/gatk/genotypegvcfs"
 
 rule genotype_gvcfs_filter:
     input:
@@ -325,7 +325,7 @@ rule genotype_gvcfs_filter:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.0/bio/bcftools/view"
+        "v9.0.1/bio/bcftools/view"
 
 rule genotype_gvcfs_tabix:
     input:
@@ -342,4 +342,4 @@ rule genotype_gvcfs_tabix:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.0/bio/tabix/index"
+        "v9.0.1/bio/tabix/index"
