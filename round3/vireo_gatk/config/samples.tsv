@@ -1,0 +1,17 @@
+pool	bam	barcodes
+rep01	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep01/outs/per_sample_outs/rep01/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep01.tsv.gz
+rep02	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep02/outs/per_sample_outs/rep02/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep02.tsv.gz
+rep03	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep03/outs/per_sample_outs/rep03/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep03.tsv.gz
+rep04	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep04/outs/per_sample_outs/rep04/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep04.tsv.gz
+rep05	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep05/outs/per_sample_outs/rep05/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep05.tsv.gz
+rep06	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep06/outs/per_sample_outs/rep06/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep06.tsv.gz
+rep07	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep07/outs/per_sample_outs/rep07/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep07.tsv.gz
+rep08	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep08/outs/per_sample_outs/rep08/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep08.tsv.gz
+rep09	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep09/outs/per_sample_outs/rep09/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep09.tsv.gz
+rep10	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep10/outs/per_sample_outs/rep10/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep10.tsv.gz
+rep11	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep11/outs/per_sample_outs/rep11/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep11.tsv.gz
+rep12	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep12/outs/per_sample_outs/rep12/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep12.tsv.gz
+rep13	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep13/outs/per_sample_outs/rep13/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep13.tsv.gz
+rep14	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep14/outs/per_sample_outs/rep14/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep14.tsv.gz
+rep15	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep15/outs/per_sample_outs/rep15/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep15.tsv.gz
+rep16	/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep16/outs/per_sample_outs/rep16/count/sample_alignments.bam	/ceph/project/goodwin/albrecht/round3/qc/results/filter_barcodes/rep16.tsv.gz
