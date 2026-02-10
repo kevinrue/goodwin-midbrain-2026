@@ -11,7 +11,7 @@ library(rtracklayer)
 ```
 
 ```{r}
-gtf_file <- "/ceph/project/goodwin/albrecht/reference_genome/results/genome.gtf"
+gtf_file <- "/ceph/project/goodwin/albrecht/cellranger_mkref/results/cellranger_mkref/genes/genes.gtf.gz"
 gtf_gene_data <- import(gtf_file, feature.type = "gene")
 length(gtf_gene_data)
 ```
@@ -22,6 +22,16 @@ table(seqnames(gtf_gene_data))
 
 ```{r}
 exclude_chr <- seqnames(gtf_gene_data) %in% c("X", "Y", "mitochondrion_genome")
+gtf_gene_filtered <- gtf_gene_data[!exclude_chr]
+length(gtf_gene_filtered)
+```
+
+```{r}
+table(gtf_gene_filtered$gene_biotype)
+```
+
+```{r}
+exclude_chr <- gtf_gene_filtered$gene_biotype %in% c("ncRNA", "pseudogene", "rRNA", "snoRNA", "snRNA", "transposable_element", "tRNA")
 gtf_gene_filtered <- gtf_gene_data[!exclude_chr]
 length(gtf_gene_filtered)
 ```
