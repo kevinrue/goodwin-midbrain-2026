@@ -34,16 +34,17 @@ DEDUP_OUTPUTS = [
     for row in samples.itertuples(index=False)
 ]
 
-localrules: multiqc_fastqc
+localrules: multiqc_fastqc, compose_regions
 
 # target rules
 # -----------------------------------------------------
 rule all:
     input:
-        "reports/multiqc/fastqc.html",
-        "results/multiqc/fastqc_data.zip",
-        "results/merge/filtered.snps.vcf.gz.tbi",
-        "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
+        # "reports/multiqc/fastqc.html",
+        # "results/multiqc/fastqc_data.zip",
+        # "results/merge/filtered.snps.vcf.gz.tbi",
+        # "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
+        expand("results/haplotype_caller/{sample}_{contig}.g.vcf.gz", sample=samples["sample"].unique(), contig=['2L', '2R', '3L', '3R', '4']),
 
 rule fastqc:
     input:
@@ -98,13 +99,13 @@ rule map_reads:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.1/bio/bwa/mem"
+        "v9.0.0/bio/bwa/mem"
 
 rule mark_duplicates:
     input:
         bams="results/mapped/{sample}-{lane}.sorted.bam",
     output:
-        bam=protected("results/dedup/{sample}-{lane}.bam"),
+        bam="results/dedup/{sample}-{lane}.bam",
         metrics="results/qc/dedup/{sample}-{lane}.metrics.txt",
     log:
         "logs/picard/dedup/{sample}-{lane}.log",
@@ -115,7 +116,7 @@ rule mark_duplicates:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.1/bio/picard/markduplicates"
+        "v9.0.0/bio/picard/markduplicates"
 
 rule bcftools_mpileup:
     input:
@@ -138,7 +139,7 @@ rule bcftools_mpileup:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.1/bio/bcftools/mpileup"
+        "v9.0.0/bio/bcftools/mpileup"
 
 rule bcftools_call:
     input:
@@ -156,7 +157,7 @@ rule bcftools_call:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.1/bio/bcftools/call"
+        "v9.0.0/bio/bcftools/call"
 
 rule bcftools_index:
     input:
@@ -172,7 +173,7 @@ rule bcftools_index:
         mem="16G",
         runtime="1h",
     wrapper:
-        "v9.0.1/bio/bcftools/index"
+        "v9.0.0/bio/bcftools/index"
 
 rule bcftools_merge:
     input:
@@ -190,7 +191,7 @@ rule bcftools_merge:
         mem="8G",
         runtime="1h",
     wrapper:
-        "v9.0.1/bio/bcftools/merge"
+        "v9.0.0/bio/bcftools/merge"
 
 rule bcftools_filter:
     input:
@@ -207,7 +208,7 @@ rule bcftools_filter:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.1/bio/bcftools/view"
+        "v9.0.0/bio/bcftools/view"
 
 rule tabix:
     input:
@@ -224,7 +225,7 @@ rule tabix:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.1/bio/tabix/index"
+        "v9.0.0/bio/tabix/index"
 
 rule samtools_index:
     input:
@@ -240,7 +241,15 @@ rule samtools_index:
         mem="8G",
         runtime="30m",
     wrapper:
-        "v9.0.1/bio/samtools/index"
+        "v9.0.0/bio/samtools/index"
+
+rule compose_regions:
+    input:
+        config["bcftools"]["targets"],
+    output:
+        "results/regions/{contig}.regions.bed",
+    script:
+        "scripts/bed_by_contig.py"
 
 rule haplotype_caller:
     input:
@@ -255,17 +264,18 @@ rule haplotype_caller:
             lane=lookup(query="sample == '{sample}'", within=samples, cols="lane")
             ),
         ref=config["genome"]["fasta"],
+        intervals="results/regions/{contig}.regions.bed",
     output:
-        gvcf="results/haplotype_caller/{sample}.g.vcf.gz",
+        gvcf="results/haplotype_caller/{sample}_{contig}.g.vcf.gz",
     params:
         extra="",  # optional
         java_opts="",  # optional
     log:
-        "logs/haplotype_caller/{sample}.log",
+        "logs/haplotype_caller/{sample}_{contig}.log",
     threads: 8 # https://github.com/snakemake/snakemake-wrappers/issues/4937
     resources:
         mem="8G",
-        runtime="4h",
+        runtime="1h",
     wrapper:
         "v9.0.1/bio/gatk/haplotypecaller"
 
@@ -288,7 +298,7 @@ rule haplotype_caller_merge:
         mem="8G",
         runtime="2h",
     wrapper:
-        "v9.0.1/bio/gatk/combinegvcfs" # https://github.com/snakemake/snakemake-wrappers/issues/4937
+        "v9.0.0/bio/gatk/combinegvcfs" # https://github.com/snakemake/snakemake-wrappers/issues/4937
 
 rule genotype_gvcfs:
     input:
@@ -308,7 +318,7 @@ rule genotype_gvcfs:
         mem="8G",
         runtime="4h",
     wrapper:
-        "v9.0.1/bio/gatk/genotypegvcfs"
+        "v9.0.0/bio/gatk/genotypegvcfs"
 
 rule genotype_gvcfs_filter:
     input:
@@ -325,7 +335,7 @@ rule genotype_gvcfs_filter:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.1/bio/bcftools/view"
+        "v9.0.0/bio/bcftools/view"
 
 rule genotype_gvcfs_tabix:
     input:
@@ -342,4 +352,4 @@ rule genotype_gvcfs_tabix:
         mem="8G",
         runtime="5m",
     wrapper:
-        "v9.0.1/bio/tabix/index"
+        "v9.0.0/bio/tabix/index"

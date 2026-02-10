@@ -8,6 +8,7 @@ format: html
 library(BiocIO)
 library(readr)
 library(rtracklayer)
+library(tibble)
 ```
 
 ```{r}
@@ -31,7 +32,7 @@ table(gtf_gene_filtered$gene_biotype)
 ```
 
 ```{r}
-exclude_chr <- gtf_gene_filtered$gene_biotype %in% c("ncRNA", "pseudogene", "rRNA", "snoRNA", "snRNA", "transposable_element", "tRNA")
+exclude_chr <- gtf_gene_filtered$gene_biotype %in% c("pseudogene", "rRNA", "snoRNA", "snRNA", "transposable_element", "tRNA")
 gtf_gene_filtered <- gtf_gene_data[!exclude_chr]
 length(gtf_gene_filtered)
 ```
@@ -43,10 +44,11 @@ gene_regions_bed <- tibble(
   start = start(gtf_gene_filtered),
   end = end(gtf_gene_filtered)
 )
+swap <- gene_regions_bed$start > gene_regions_bed$end
+gene_regions_bed[swap, c("start", "end")] <- gene_regions_bed[swap, c("end", "start")]
 gene_regions_bed
 ```
 
 ```{r}
 write_tsv(x = gene_regions_bed, file = "gene_regions.bed", col_names = FALSE)
 ```
-
