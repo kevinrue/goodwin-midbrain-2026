@@ -14,8 +14,22 @@ vcf_data
 ```
 
 ```{r}
-keep <- geno(vcf_data)[["GT"]][, "D129"] %in% c("0/1", "1/0", "0|1", "1|0")
-# geno(vcf_data)[["GT"]][keep, "D129"]
+is_het <- function(sample) {
+  geno(vcf_data)[["GT"]][, sample] %in% c("0/1", "1/0", "0|1", "1|0")
+}
+is_not_het <- function(sample) {
+  geno(vcf_data)[["GT"]][, sample] %in% c("0/0", "0|0", "1|1", "1/1")
+}
+```
+
+
+```{r}
+keep <- is_het("D129")
+rowRanges(vcf_data)[keep,]
+```
+
+```{r}
+keep <- is_het("D129") & is_not_het("D441")
 rowRanges(vcf_data)[keep,]
 ```
 
