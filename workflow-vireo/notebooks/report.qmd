@@ -1,0 +1,37 @@
+---
+title: "report"
+format: html
+---
+
+```{r}
+#| message: false
+library(ggplot2)
+library(readr)
+```
+
+```{r}
+vireo_data <- read_tsv(
+  file = "/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo/S1/donor_ids.tsv",
+  show_col_types = FALSE
+)
+vireo_data
+```
+
+```{r}
+ggplot(vireo_data, aes(x = donor_id)) +
+  geom_bar(alpha = 0.25) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+```
+
+
+```{r}
+ggplot(vireo_data, aes(x = donor_id, y = n_vars)) +
+  geom_violin(scale = "width") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+```
