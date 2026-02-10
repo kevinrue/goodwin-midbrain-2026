@@ -44,7 +44,7 @@ rule all:
         # "results/multiqc/fastqc_data.zip",
         # "results/merge/filtered.snps.vcf.gz.tbi",
         # "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
-        expand("results/haplotype_caller/{sample}_{contig}.g.vcf.gz", sample=samples["sample"].unique(), contig=['2L', '2R', '3L', '3R', '4']),
+        expand("results/combinegvcfs/{contig}.g.vcf.gz", contig=['2L', '2R', '3L', '3R', '4']),
 
 rule fastqc:
     input:
@@ -279,30 +279,30 @@ rule haplotype_caller:
     wrapper:
         "v9.0.1/bio/gatk/haplotypecaller"
 
-rule haplotype_caller_merge:
+rule combinegvcfs:
     input:
+        ref=config["genome"]["fasta"],
         gvcfs=expand(
-            "results/haplotype_caller/{sample}.g.vcf.gz",
+            "results/haplotype_caller/{sample}_{{contig}}.g.vcf.gz",
             sample=samples['sample'].unique()
         ),
-        ref=config["genome"]["fasta"],
     output:
-        gvcf="results/haplotype_caller_merge/all.g.vcf.gz",
+        gvcf="results/combinegvcfs/{contig}.g.vcf.gz",
     log:
-        "logs/haplotype_caller_merge.log",
+        "logs/combinegvcfs/{contig}.log",
     params:
         extra="",  # optional
         java_opts="",  # optional
-    threads: 8
+    threads: 4
     resources:
         mem="8G",
-        runtime="2h",
+        runtime="1h",
     wrapper:
         "v9.0.0/bio/gatk/combinegvcfs" # https://github.com/snakemake/snakemake-wrappers/issues/4937
 
 rule genotype_gvcfs:
     input:
-        gvcf="results/haplotype_caller_merge/all.g.vcf.gz",  # combined gvcf over multiple samples
+        gvcf="results/combinegvcfs/{contig}.g.vcf.gz",  # combined gvcf over multiple samples
     # N.B. gvcf or genomicsdb must be specified
     # in the latter case, this is a GenomicsDB data store
         ref=config["genome"]["fasta"],
