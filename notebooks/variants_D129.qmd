@@ -1,0 +1,21 @@
+---
+title: "variants_D129"
+format: html
+---
+
+```{r}
+#| message: false
+library(VariantAnnotation)
+```
+
+```{r}
+vcf_data <- readVcf("../workflow-dna-seq-gatk-variant-calling/results/filtered/all.norm.filtered.vcf.gz")
+vcf_data
+```
+
+```{r}
+keep <- geno(vcf_data)[["GT"]][, "D129"] %in% c("0/1", "1/0", "0|1", "1|0")
+# geno(vcf_data)[["GT"]][keep, "D129"]
+rowRanges(vcf_data)[keep,]
+```
+

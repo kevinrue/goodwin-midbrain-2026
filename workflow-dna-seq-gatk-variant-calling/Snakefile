@@ -40,11 +40,10 @@ localrules: multiqc_fastqc, compose_regions
 # -----------------------------------------------------
 rule all:
     input:
-        # "reports/multiqc/fastqc.html",
-        # "results/multiqc/fastqc_data.zip",
-        # "results/merge/filtered.snps.vcf.gz.tbi",
-        # "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
-        expand("results/combinegvcfs/{contig}.g.vcf.gz", contig=['2L', '2R', '3L', '3R', '4']),
+        "reports/multiqc/fastqc.html",
+        "results/multiqc/fastqc_data.zip",
+        "results/merge/filtered.snps.vcf.gz.tbi",
+        "results/filtered/all.norm.filtered.vcf.gz.tbi",
 
 rule fastqc:
     input:
@@ -293,7 +292,7 @@ rule combinegvcfs:
     params:
         extra="",  # optional
         java_opts="",  # optional
-    threads: 4
+    threads: 1 # not multi-threaded according to GATK documentation
     resources:
         mem="8G",
         runtime="1h",
@@ -302,34 +301,88 @@ rule combinegvcfs:
 
 rule genotype_gvcfs:
     input:
-        gvcf="results/combinegvcfs/{contig}.g.vcf.gz",  # combined gvcf over multiple samples
-    # N.B. gvcf or genomicsdb must be specified
-    # in the latter case, this is a GenomicsDB data store
         ref=config["genome"]["fasta"],
+        gvcf="results/combinegvcfs/{contig}.g.vcf.gz",
     output:
-        vcf="results/genotype_gvcfs/all.vcf.gz",
+        vcf=temp("results/genotype_gvcfs/{contig}.vcf.gz"),
     log:
-        "logs/gatk/genotypegvcfs.log",
+        "logs/gatk/genotypegvcfs/{contig}.log",
     params:
         extra="",  # optional --sample-ploidy 2 (default)
-        java_opts="", # optional
     threads: 1 # not multi-threaded according to GATK documentation
     resources:
         mem="8G",
-        runtime="4h",
+        runtime="1h",
     wrapper:
         "v9.0.0/bio/gatk/genotypegvcfs"
 
-rule genotype_gvcfs_filter:
+rule mergevcfs:
     input:
-        "results/genotype_gvcfs/all.vcf.gz",
-        targets=config["bcftools"]["targets"],
+        vcfs=expand(
+            "results/genotype_gvcfs/{contig}.vcf.gz", contig=['2L', '2R', '3L', '3R', '4']
+        ),
     output:
-        "results/genotype_gvcfs/filtered.snps.vcf.gz",
+        vcf="results/genotype_gvcfs/all.vcf.gz",
     log:
-        "logs/genotype_gvcfs_filter.log",
+        "logs/mergevcfs.log",
+    threads: 1 # not multi-threaded according to GATK documentation
+    resources:
+        mem="8G",
+        runtime="1h",
+    wrapper:
+        "v9.0.0/bio/picard/mergevcfs"
+
+rule select_calls:
+    input:
+        ref=config["genome"]["fasta"],
+        vcf="results/genotype_gvcfs/all.vcf.gz",
+    output:
+        vcf=temp("results/filtered/all.snvs.vcf.gz"),
     params:
-        extra="-m2 -M2 --include 'QUAL>=30 && FMT/GT=\"het\"' --types snps",
+        extra="--select-type-to-include SNP",
+    log:
+        "logs/gatk/selectvariants/snvs.log",
+    wrapper:
+        "v9.0.0/bio/gatk/selectvariants"
+
+rule hard_filter_calls:
+    input:
+        ref=config["genome"]["fasta"],
+        vcf="results/filtered/all.snvs.vcf.gz",
+    output:
+        vcf="results/filtered/all.vcf.gz",
+    params:
+        filters={"snv-hard-filter": "QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"},
+    log:
+        "logs/gatk/variantfiltration/snvs.log",
+    wrapper:
+        "v9.0.0/bio/gatk/variantfiltration"
+
+rule gatk_norm:
+    input:
+        "results/filtered/all.vcf.gz",
+    output:
+        "results/filtered/all.norm.vcf.gz",
+    log:
+        "logs/gatk/norm.log",
+    params:
+        extra="-m -any",  # split multiallelics into biallelics
+    threads: 8
+    resources:
+        mem="8G",
+        runtime="1h",
+    wrapper:
+        "v9.0.0/bio/bcftools/norm"
+
+rule gatk_norm_filtered:
+    input:
+        "results/filtered/all.norm.vcf.gz",
+    output:
+        "results/filtered/all.norm.filtered.vcf.gz",
+    log:
+        "logs/gatk/norm_filtered.log",
+    params:
+        extra="--include 'FILTER=\"PASS\" && FMT/GT=\"het\"'",
     threads: 8
     resources:
         mem="8G",
@@ -337,13 +390,13 @@ rule genotype_gvcfs_filter:
     wrapper:
         "v9.0.0/bio/bcftools/view"
 
-rule genotype_gvcfs_tabix:
+rule gatk_tabix:
     input:
-        "results/genotype_gvcfs/filtered.snps.vcf.gz",
+        "results/filtered/all.norm.filtered.vcf.gz",
     output:
-        "results/genotype_gvcfs/filtered.snps.vcf.gz.tbi",
+        "results/filtered/all.norm.filtered.vcf.gz.tbi",
     log:
-        "logs/genotype_gvcfs_tabix.log",
+        "logs/gatk/tabix.log",
     params:
         # pass arguments to tabix (e.g. index a vcf)
         "-p vcf",

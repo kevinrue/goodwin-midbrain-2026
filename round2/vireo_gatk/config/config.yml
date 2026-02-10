@@ -2,4 +2,4 @@ samplesheet: "config/samples.tsv"
 
 cellsnp_lite:
   max_depth: 0
-  vcf: "/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/genotype_gvcfs/filtered.snps.vcf.gz"
+  vcf: "/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/filtered/all.norm.filtered.vcf.gz"
