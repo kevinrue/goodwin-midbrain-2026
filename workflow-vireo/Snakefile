@@ -16,11 +16,27 @@ rule all:
     input:
         expand("results/vireo/{pool}", pool=samples["pool"].tolist())
 
+rule filter_vcf_samples:
+    input:
+        config["vcf"]["path"]
+    output:
+        "results/vcf/samples.vcf.gz",
+    log:
+        "logs/filter_vcf_samples.log",
+    params:
+        extra="--samples {} --include 'FMT/GT=\"het\"'".format(config["vcf"]["samples"])
+    threads: 8
+    resources:
+        mem="8G",
+        runtime="5m",
+    wrapper:
+        "v9.0.0/bio/bcftools/view"
+
 rule cellsnp_lite:
     input:
         bam=lookup(query="pool == '{pool}'", within=samples, cols="bam"),
         barcodes=lookup(query="pool == '{pool}'", within=samples, cols="barcodes"),
-        vcf=config["cellsnp_lite"]["vcf"],
+        vcf="results/vcf/samples.vcf.gz",
     output:
         dir=directory("results/cellsnp_lite/{pool}"),
     params:
@@ -49,7 +65,7 @@ rule cellsnp_lite:
 rule vireo:
     input:
         cellsnp="results/cellsnp_lite/{pool}",
-        vcf=config["cellsnp_lite"]["vcf"],
+        vcf="results/vcf/samples.vcf.gz",
     output:
         dir=directory("results/vireo/{pool}"),
     log:
