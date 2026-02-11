@@ -14,7 +14,9 @@ samples = (
 
 rule all:
     input:
-        expand("results/vireo/{pool}", pool=samples["pool"].tolist())
+        expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
+        # expand("results/vireo_de_novo/{pool}", pool=samples["pool"].tolist()),
+        # expand("results/vireo_force_gt/{pool}", pool=samples["pool"].tolist()),
 
 rule filter_vcf_samples:
     input:
@@ -81,4 +83,46 @@ rule vireo:
         " -c {input.cellsnp}"
         " -d {input.vcf}"
         " -o {output.dir}"
+        " 2> {log} "
+
+rule vireo_de_novo:
+    input:
+        cellsnp="results/cellsnp_lite/{pool}",
+    output:
+        dir=directory("results/vireo_de_novo/{pool}"),
+    log:
+        "results/vireo_de_novo/{pool}.log",
+    conda:
+        "envs/vireo.yml",
+    threads: 16
+    resources:
+        mem="64G",
+        runtime="12h",
+    shell:
+        "vireo "
+        " -c {input.cellsnp}"
+        " -N 16" # TODO configure
+        " -o {output.dir}"
+        " 2> {log} "
+
+rule vireo_force_gt:
+    input:
+        cellsnp="results/cellsnp_lite/{pool}",
+        vcf="results/vcf/samples.vcf.gz",
+    output:
+        dir=directory("results/vireo_force_gt/{pool}"),
+    log:
+        "results/vireo_force_gt/{pool}.log",
+    conda:
+        "envs/vireo.yml",
+    threads: 16
+    resources:
+        mem="64G",
+        runtime="12h",
+    shell:
+        "vireo "
+        " -c {input.cellsnp}"
+        " -d {input.vcf}"
+        " -o {output.dir}"
+        " --forceLearnGT"
         " 2> {log} "
