@@ -58,10 +58,10 @@ ggplot(vireo_summary, aes(x = donor_id, y = n, colour = sample)) +
 
 ```{r}
 total_assigned_per_sample <- vireo_summary |> 
-  filter(donor_id %in% c("unassigned", "doublet")) |> 
+  filter(!donor_id %in% c("unassigned", "doublet")) |> 
   summarise(total = sum(n), .by = sample)
-ggplot(vireo_summary, aes(x = donor_id, y = n, colour = sample)) +
-  geom_line(aes(group = sample)) +
+ggplot(total_assigned_per_sample, aes(x = sample, y = total, fill = sample)) +
+  geom_col(alpha = 0.25) +
   labs(
     subtitle = stringr::str_glue("Uniquely assigned: {total}", total = format(total_assigned, big.mark = ","))
   ) +
