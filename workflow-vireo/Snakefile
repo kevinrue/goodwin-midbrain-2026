@@ -15,6 +15,7 @@ samples = (
 rule all:
     input:
         expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
+        "reports/report.html",
         # expand("results/vireo_de_novo/{pool}", pool=samples["pool"].tolist()),
         # expand("results/vireo_force_gt/{pool}", pool=samples["pool"].tolist()),
 
@@ -76,14 +77,28 @@ rule vireo:
         "envs/vireo.yml",
     threads: 16
     resources:
-        mem="64G",
-        runtime="12h",
+        mem="16G",
+        runtime="1h",
     shell:
         "vireo "
         " -c {input.cellsnp}"
         " -d {input.vcf}"
         " -o {output.dir}"
         " 2> {log} "
+
+rule report:
+    input:
+        vireo_dir=expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
+    output:
+        html="reports/report.html",
+    conda:
+        "envs/umi_stats_one.yaml"
+    threads: 1
+    resources:
+        mem="8G",
+        runtime="20m",
+    script:
+        "notebooks/report.Rmd"
 
 rule vireo_de_novo:
     input:
@@ -96,7 +111,7 @@ rule vireo_de_novo:
         "envs/vireo.yml",
     threads: 16
     resources:
-        mem="64G",
+        mem="32G",
         runtime="12h",
     shell:
         "vireo "
@@ -117,7 +132,7 @@ rule vireo_force_gt:
         "envs/vireo.yml",
     threads: 16
     resources:
-        mem="64G",
+        mem="32G",
         runtime="12h",
     shell:
         "vireo "

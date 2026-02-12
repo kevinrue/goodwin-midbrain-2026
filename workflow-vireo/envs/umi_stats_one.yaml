@@ -1,0 +1,11 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-dplyr
+  - r-ggplot2
+  - r-purrr
+  - r-readr
+  - r-rmarkdown
+  - r-scales
+  - r-stringr

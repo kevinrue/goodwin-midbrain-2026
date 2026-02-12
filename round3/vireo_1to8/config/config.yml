@@ -1,0 +1,8 @@
+samplesheet: "config/samples.tsv"
+
+vcf:
+  path: "/ceph/project/goodwin/albrecht/workflow-dna-seq-gatk-variant-calling/results/filtered/all.norm.filtered.vcf.gz"
+  samples: "D189,D324,D805,D320,D748,D437,D441,D810,D406,D589,D304,D395,D177,D382,D355,D505"
+
+cellsnp_lite:
+  max_depth: 0

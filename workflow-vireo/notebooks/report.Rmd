@@ -1,37 +1,61 @@
 ---
-title: "report"
-format: html
+title: "Demultiplexing report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
 ---
 
-```{r}
-#| message: false
+```{r library, include=FALSE}
+library(dplyr)
 library(ggplot2)
+library(purrr)
 library(readr)
+library(stringr)
 ```
 
+```{r constants, include=FALSE}
+umi_breaks <- 10^(-1:10)
+umi_minor_breaks <- rep(c(1, 2, 5), 12) * (10^rep(-1:10, each = 3))
+barcode_breaks <- 10^(-1:10)
+barcode_minor_breaks <- 10^rep(-1:10)
+scale_colour_cell_empty <- c(
+  cell = "#0fbdb4",
+  empty = "#e35f4b"
+)
+```
+
+```{r snakemake, include=FALSE}
+vireo_dirs <- snakemake@input[["vireo_dir"]]
+```
+
+## Information
+
+- **Pools:** `r str_glue("Processing {n} pools", n = length(vireo_dirs))`
+
 ```{r}
+# donors_tsv_files <- str_glue("/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo/S{pool}/donor_ids.tsv", pool = 1:8)
+# file.exists(donors_tsv_files)
 # vireo_data <- read_tsv(
 #   file = "/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo/S1/donor_ids.tsv",
 #   show_col_types = FALSE
 # )
 # vireo_data
-samples <- paste0("S", 1:8)
-
-vireo_data <- map_dfr(samples, function(s) {
+# samples <- paste0("S", 1:8)
+vireo_data <- map_dfr(vireo_dirs, function(vireo_dir) {
+  sample_id <- basename(vireo_dir)
+  vireo_file <- file.path(vireo_dir, "donor_ids.tsv")
   read_tsv(
-    file = file.path(
-      "/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo",
-      s,
-      "donor_ids.tsv"
-    ),
+    file = vireo_file,
     show_col_types = FALSE
   ) %>%
-    mutate(sample = s, .before = 1)
+    mutate(sample = sample_id, .before = 1)
 })
 vireo_data
 ```
 
-```{r}
+```{r vireo_summary, echo=FALSE}
 vireo_summary <- vireo_data |> 
   summarise(
     n = n(), .by = c(sample, donor_id)
@@ -39,7 +63,7 @@ vireo_summary <- vireo_data |>
 vireo_summary
 ```
 
-```{r}
+```{r total_assigned, echo=FALSE}
 total_assigned <- vireo_summary |> 
   filter(!donor_id %in% c("unassigned", "doublet")) |> 
   summarise(total = sum(n)) |> 
@@ -56,7 +80,7 @@ ggplot(vireo_summary, aes(x = donor_id, y = n, colour = sample)) +
   )
 ```
 
-```{r}
+```{r total_assigned_per_sample, echo=FALSE}
 total_assigned_per_sample <- vireo_summary |> 
   filter(!donor_id %in% c("unassigned", "doublet")) |> 
   summarise(total = sum(n), .by = sample)
@@ -71,10 +95,13 @@ ggplot(total_assigned_per_sample, aes(x = sample, y = total, fill = sample)) +
   )
 ```
 
-```{r}
+```{r plot_nvars_by_donor, echo=FALSE}
 ggplot(vireo_data, aes(x = donor_id, y = n_vars)) +
   geom_violin(scale = "width") +
   theme_bw() +
+  labs(
+    subtitle = stringr::str_glue("Uniquely assigned: {total}", total = format(total_assigned, big.mark = ","))
+  ) +
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
   )
