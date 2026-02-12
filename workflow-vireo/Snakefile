@@ -50,7 +50,7 @@ rule cellsnp_lite:
         "envs/vireo.yml",
     threads: 16
     resources:
-        mem="64G",
+        mem="8G",
         runtime="4h",
     shell:
         "cellsnp-lite "
@@ -60,7 +60,7 @@ rule cellsnp_lite:
         " -O {output.dir} "
         " --maxDEPTH {params.max_depth}"
         " -p {threads} "
-        " --minMAF 0.1 "
+        " --minMAF 0.01 "
         " --minCOUNT 20 "
         " --gzip "
         " 2> {log} "
