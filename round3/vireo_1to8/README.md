@@ -8,7 +8,7 @@ Set up environment variables:
 PROJECT_DIR="/ceph/project/goodwin"
 PROJECT_CONDA_DIR="$PROJECT_DIR/albrecht/conda"
 WORKFLOW_DIR="$PROJECT_DIR/albrecht/workflow-vireo"
-RUN_DIR="$PROJECT_DIR/albrecht/round3/vireo_1_to_8"
+RUN_DIR="$PROJECT_DIR/albrecht/round3/vireo_1to8"
 DEPLOY_DIR="$PROJECT_DIR/datashare/albrecht/round3/vireo"
 ```
 
