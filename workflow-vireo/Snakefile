@@ -16,7 +16,7 @@ rule all:
     input:
         expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
         "reports/report.html",
-        # expand("results/vireo_de_novo/{pool}", pool=samples["pool"].tolist()),
+        expand("results/vireo_de_novo/{pool}", pool=samples["pool"].tolist()),
         # expand("results/vireo_force_gt/{pool}", pool=samples["pool"].tolist()),
 
 rule filter_vcf_samples:
