@@ -1,0 +1,44 @@
+---
+title: "report"
+format: html
+---
+
+```{r library, message=FALSE}
+library(ggplot2)
+library(readr)
+library(SingleCellExperiment)
+```
+
+```{r}
+sce <- read10xCounts(samples = c(rep01 = "/ceph/project/goodwin/albrecht/round3/cellranger/results/cellranger/rep01/outs/per_sample_outs/rep01/count/sample_filtered_feature_bc_matrix/"))
+sce
+```
+
+```{r}
+vireo_data <- read_tsv("/ceph/project/goodwin/albrecht/round3/vireo_1to8/results/vireo/rep01/donor_ids.tsv", show_col_types = FALSE)
+vireo_data
+```
+
+```{r}
+sce$vireo_donor_id <- vireo_data[match(sce$Barcode, vireo_data$cell), "donor_id", drop = TRUE]
+```
+
+```{r}
+rox2_idx <- grep("rox2", rowData(sce)[["Symbol"]], ignore.case = TRUE)
+tibble(
+  rox2 = counts(sce)[rox2_idx, ],
+  donor_id = sce$vireo_donor_id
+) |> 
+  filter(rox2 > 0) |> 
+  ggplot(aes(x = donor_id, y = rox2, fill = donor_id)) +
+  geom_violin(scale = "width") +
+  scale_y_log10() +
+  guides(
+    fill = "none"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+```
+
