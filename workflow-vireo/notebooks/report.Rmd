@@ -9,6 +9,7 @@ output:
 
 ```{r library, include=FALSE}
 library(dplyr)
+library(DropletUtils)
 library(ggplot2)
 library(purrr)
 library(readr)
@@ -27,22 +28,15 @@ scale_colour_cell_empty <- c(
 ```
 
 ```{r snakemake, include=FALSE}
-vireo_dirs <- snakemake@input[["vireo_dir"]]
+vireo_dirs <- snakemake@input[["vireo_dirs"]]
+cellranger_h5s <- snakemake@input[["cellranger_h5s"]]
 ```
 
 ## Information
 
 - **Pools:** `r str_glue("Processing {n} pools", n = length(vireo_dirs))`
 
-```{r}
-# donors_tsv_files <- str_glue("/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo/S{pool}/donor_ids.tsv", pool = 1:8)
-# file.exists(donors_tsv_files)
-# vireo_data <- read_tsv(
-#   file = "/ceph/project/goodwin/albrecht/round2/vireo_gatk/results/vireo/S1/donor_ids.tsv",
-#   show_col_types = FALSE
-# )
-# vireo_data
-# samples <- paste0("S", 1:8)
+```{r vireo_data, echo=FALSE}
 vireo_data <- map_dfr(vireo_dirs, function(vireo_dir) {
   sample_id <- basename(vireo_dir)
   vireo_file <- file.path(vireo_dir, "donor_ids.tsv")
@@ -52,8 +46,26 @@ vireo_data <- map_dfr(vireo_dirs, function(vireo_dir) {
   ) %>%
     mutate(sample = sample_id, .before = 1)
 })
-vireo_data
 ```
+
+```{r sce, echo=FALSE}
+cellranger_h5s <- read_tsv("config/samples.tsv", show_col_types = FALSE) |> 
+  pull(cellranger_h5, name = pool)
+sce <- read10xCounts(samples = cellranger_h5s) # TODO list of files + uniquify sample names
+```
+
+```{r vireo_donor_id, echo=FALSE}
+colData(sce) <- colData(sce) |> 
+  as_tibble() |> 
+  left_join(vireo_data, by = join_by(Sample == sample, Barcode == cell)) |> 
+  as("DataFrame")
+# sce$vireo_donor_id <- vireo_data[match(sce$Barcode, vireo_data$cell), "donor_id", drop = TRUE]
+sce <- sce[, !is.na(sce$donor_id)]
+```
+
+## Sumary of Vireo results
+
+### Number of cells assigned to each donor
 
 ```{r vireo_summary, echo=FALSE}
 vireo_summary <- vireo_data |> 
@@ -63,6 +75,8 @@ vireo_summary <- vireo_data |>
 vireo_summary
 ```
 
+### Total assigned barcodes per donor
+
 ```{r total_assigned, echo=FALSE}
 total_assigned <- vireo_summary |> 
   filter(!donor_id %in% c("unassigned", "doublet")) |> 
@@ -71,7 +85,10 @@ total_assigned <- vireo_summary |>
 ggplot(vireo_summary, aes(x = donor_id, y = n, colour = sample)) +
   geom_line(aes(group = sample)) +
   labs(
-    subtitle = stringr::str_glue("Uniquely assigned: {total}", total = format(total_assigned, big.mark = ","))
+    subtitle = str_glue(
+      "Uniquely assigned: {total}",
+      total = format(total_assigned, big.mark = ",")
+    )
   ) +
   coord_cartesian(ylim = c(0, NA)) +
   theme_bw() +
@@ -80,6 +97,8 @@ ggplot(vireo_summary, aes(x = donor_id, y = n, colour = sample)) +
   )
 ```
 
+### Total assigned barcodes per sample
+
 ```{r total_assigned_per_sample, echo=FALSE}
 total_assigned_per_sample <- vireo_summary |> 
   filter(!donor_id %in% c("unassigned", "doublet")) |> 
@@ -87,7 +106,10 @@ total_assigned_per_sample <- vireo_summary |>
 ggplot(total_assigned_per_sample, aes(x = sample, y = total, fill = sample)) +
   geom_col(alpha = 0.25) +
   labs(
-    subtitle = stringr::str_glue("Uniquely assigned: {total}", total = format(total_assigned, big.mark = ","))
+    subtitle = str_glue(
+      "Uniquely assigned: {total}",
+      total = format(total_assigned, big.mark = ",")
+    )
   ) +
   theme_bw() +
   theme(
@@ -95,13 +117,44 @@ ggplot(total_assigned_per_sample, aes(x = sample, y = total, fill = sample)) +
   )
 ```
 
+### Number of variants per barcode per donor
+
 ```{r plot_nvars_by_donor, echo=FALSE}
 ggplot(vireo_data, aes(x = donor_id, y = n_vars)) +
   geom_violin(scale = "width") +
   theme_bw() +
   labs(
-    subtitle = stringr::str_glue("Uniquely assigned: {total}", total = format(total_assigned, big.mark = ","))
+    subtitle = str_glue(
+      "Uniquely assigned: {total}",
+      total = format(total_assigned, big.mark = ",")
+    )
   ) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+```
+
+### Expression of lncRNA:roX2
+
+```{r violin_rox2, echo=FALSE}
+rox2_idx <- grep("rox2", rowData(sce)[["Symbol"]], ignore.case = TRUE)
+tibble(
+  rox2 = as.numeric(counts(sce)[rox2_idx, ]),
+  donor_id = sce$donor_id
+) |> 
+  filter(rox2 > 0) |> 
+  ggplot(aes(x = donor_id, y = rox2, fill = donor_id)) +
+  geom_violin(scale = "width", alpha = 0.25) +
+  scale_y_log10() +
+  guides(
+    fill = "none"
+  ) +
+  labs(
+    title = "Expression of lncRNA:roX2",
+    y = "Counts (log10 scale)",
+    x = "Vireo donor ID"
+  ) +
+  theme_classic() +
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
   )

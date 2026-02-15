@@ -21,6 +21,8 @@ vireo_data
 
 ```{r}
 sce$vireo_donor_id <- vireo_data[match(sce$Barcode, vireo_data$cell), "donor_id", drop = TRUE]
+sce <- sce[!is.na(sce$vireo_donor_id)]
+sce
 ```
 
 ```{r}

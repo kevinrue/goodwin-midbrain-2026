@@ -12,6 +12,8 @@ samples = (
     .sort_index()
 )
 
+localrules: report
+
 rule all:
     input:
         expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
@@ -88,11 +90,12 @@ rule vireo:
 
 rule report:
     input:
-        vireo_dir=expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
+        vireo_dirs=expand("results/vireo/{pool}", pool=samples["pool"].tolist()),
+        cellranger_h5s=samples["cellranger_h5"],
     output:
         html="reports/report.html",
     conda:
-        "envs/umi_stats_one.yaml"
+        "envs/report.yml"
     threads: 1
     resources:
         mem="8G",
