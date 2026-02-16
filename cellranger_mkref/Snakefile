@@ -17,24 +17,22 @@ rule cellranger_mkref:
     output:
         directory("results/cellranger_mkref"),
     params:
-        genome=config["cellranger"]["mkref"]["genome"]
+        genome=config["cellranger"]["mkref"]["genome"],
     message:
         """--- Make cellranger reference."""
     threads: 1
     resources:
-        mem="32G"
+        mem="32G",
+        mem_gb=32,
         runtime="30m",
     log:
         "logs/cellranger_mkref.log",
     shell:
-        "mkdir -p tmp &&"
-        " gunzip -c {input.fasta} > tmp/genome.fa &&"
         " cellranger mkref"
         "  --genome {params.genome}"
-        "  --fasta tmp/genome.fa"
+        "  --fasta {input.fasta}"
         "  --genes {input.gtf}"
         "  --nthreads {threads}"
         "  --memgb {resources.mem_gb}"
         "  --output-dir {output}"
-        "  2> {log} &&"
-        " rm -rf tmp"
+        "  2> {log} "

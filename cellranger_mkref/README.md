@@ -15,6 +15,8 @@ Run the workflow:
 ```bash
 cd $RUN_DIR
 snakemake --dry-run
-nohup snakemake --directory $RUN_DIR > $RUN_DIR/nohup.out 2>&1 &
+nohup snakemake \
+  --directory $RUN_DIR \
+  > $RUN_DIR/nohup.out 2>&1 &
 rm -rf $RUN_DIR/sps-*
 ```

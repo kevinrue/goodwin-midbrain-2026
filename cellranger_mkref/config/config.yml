@@ -1,5 +1,5 @@
 cellranger:
   mkref:
-    fasta: /ceph/project/goodwin/albrecht/reference_genome/results/genome/genome.fa.gz
-    gtf: /ceph/project/goodwin/albrecht/reference_genome/results/genome/genome.gtf.gz
+    fasta: /ceph/project/goodwin/albrecht/reference_genome/results/genome.fa
+    gtf: /ceph/project/goodwin/albrecht/reference_genome/results/genome.gtf
     genome: BDGP_6_46
