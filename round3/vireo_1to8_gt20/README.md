@@ -8,8 +8,8 @@ Set up environment variables:
 PROJECT_DIR="/ceph/project/goodwin"
 PROJECT_CONDA_DIR="$PROJECT_DIR/albrecht/conda"
 WORKFLOW_DIR="$PROJECT_DIR/albrecht/workflow-vireo"
-RUN_DIR="$PROJECT_DIR/albrecht/round3/vireo_gatk"
-DEPLOY_DIR="$PROJECT_DIR/datashare/albrecht/round3/vireo"
+RUN_DIR="$PROJECT_DIR/albrecht/round3/vireo_1to8_gt20"
+DEPLOY_DIR="$PROJECT_DIR/datashare/albrecht/round3/vireo_1to8_gt20"
 ```
 
 Configure the workflow:
@@ -34,6 +34,7 @@ nohup snakemake \
   --directory $RUN_DIR \
   --conda-prefix $PROJECT_CONDA_DIR \
   > $RUN_DIR/nohup.out 2>&1 &
+tail -f $RUN_DIR/nohup.out
 rm -rf $RUN_DIR/sps-*
 ```
 
