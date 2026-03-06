@@ -1,0 +1,3 @@
+salmon:
+  index:
+    fasta: /ceph/project/goodwin/albrecht/reference_genome/results/genome.fa

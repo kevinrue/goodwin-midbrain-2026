@@ -1,0 +1,63 @@
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        multiext(
+            "results/salmon/transcriptome_index/",
+            "complete_ref_lens.bin",
+            "ctable.bin",
+            "ctg_offsets.bin",
+            "duplicate_clusters.tsv",
+            "info.json",
+            "mphf.bin",
+            "pos.bin",
+            "pre_indexing.log",
+            "rank.bin",
+            "refAccumLengths.bin",
+            "ref_indexing.log",
+            "reflengths.bin",
+            "refseq.bin",
+            "seq.bin",
+            "versionInfo.json",
+        ),
+
+# Build BWA index
+# -----------------------------------------------------
+# Necessary for mapping reads using BWA.
+rule salmon_index:
+    input:
+        sequences=config["salmon"]["index"]["fasta"],
+    output:
+        multiext(
+            "results/salmon/transcriptome_index/",
+            "complete_ref_lens.bin",
+            "ctable.bin",
+            "ctg_offsets.bin",
+            "duplicate_clusters.tsv",
+            "info.json",
+            "mphf.bin",
+            "pos.bin",
+            "pre_indexing.log",
+            "rank.bin",
+            "refAccumLengths.bin",
+            "ref_indexing.log",
+            "reflengths.bin",
+            "refseq.bin",
+            "seq.bin",
+            "versionInfo.json",
+        ),
+    log:
+        "logs/salmon_index.log",
+    threads: 2
+    params:
+        # optional parameters
+        extra="",
+    resources:
+        mem="8G",
+        runtime="5m",
+    wrapper:
+        "v9.0.0/bio/salmon/index"
