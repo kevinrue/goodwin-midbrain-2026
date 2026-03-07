@@ -19,3 +19,4 @@ md5sum.*
 *.bed
 notebooks/*.tsv
 test-*/
+alevin_fry_home/

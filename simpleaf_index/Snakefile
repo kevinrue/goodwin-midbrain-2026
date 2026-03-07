@@ -1,0 +1,38 @@
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yml"
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        "results",
+
+# Build simpleaf index
+# -----------------------------------------------------
+# Necessary for mapping reads using simpleaf.
+rule simpleaf_index:
+    input:
+        fasta=config["fasta"],
+        gtf=config["gtf"],
+    output:
+        directory("results"),
+    conda:
+        "envs/simpleaf.yml"
+    log:
+        "logs/simpleaf_index.log",
+    threads: 8
+    params:
+        # optional parameters
+        extra="--ref-type spliced+intronic",
+    resources:
+        mem="8G",
+        runtime="15m",
+    shell:
+        "export ALEVIN_FRY_HOME=\"$(pwd)/alevin_fry_home\" && "
+        "simpleaf set-paths && "
+        "simpleaf index "
+        " {params.extra}"
+        " --output {output[0]} "
+        " --fasta {input.fasta} "
+        " --gtf {input.gtf} "

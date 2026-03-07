@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - simpleaf==0.20.0
